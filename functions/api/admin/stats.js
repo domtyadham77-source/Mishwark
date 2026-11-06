@@ -1,1 +1,2 @@
-
+import { json, requireUser, cairoDate } from '../../_lib/core.js';
+export async function onRequestGet({request,env}) { const a=await requireUser(request,env,'admin'); if(a.error) return a.error; const date=cairoDate(); const [users,rides,ledger]=await Promise.all([env.DB.prepare("SELECT role,status,COUNT(*) AS n FROM users GROUP BY role,status").all(),env.DB.prepare('SELECT status,COUNT(*) AS n FROM rides GROUP BY status').all(),env.DB.prepare('SELECT COUNT(*) AS trips,COALESCE(SUM(amount_piasters),0) AS total_piasters FROM ride_ledger WHERE local_service_date=?').bind(date).first()]); return json({ok:true,date,users:users.results||[],rides:rides.results||[],today:ledger}); }
