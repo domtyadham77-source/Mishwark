@@ -1,0 +1,16 @@
+{
+  "name": "mishwark-platform",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler pages dev public",
+    "deploy": "wrangler pages deploy public",
+    "db:local": "wrangler d1 execute mishwark-db --local --file=./db/schema.sql",
+    "db:remote": "wrangler d1 execute mishwark-db --remote --file=./db/schema.sql",
+    "check": "find functions -name '*.js' -print0 | xargs -0 -n1 node --check && node --check public/app.js && node --check public/admin/admin.js && node --check public/sw.js"
+  },
+  "devDependencies": {
+    "wrangler": "^4.45.0"
+  }
+}

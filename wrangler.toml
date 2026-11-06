@@ -1,1 +1,13 @@
+name = "mishwark-platform"
+compatibility_date = "2026-11-06"
+pages_build_output_dir = "public"
 
+[[d1_databases]]
+binding = "DB"
+database_name = "mishwark-db"
+database_id = "PASTE_YOUR_NEW_D1_DATABASE_ID"
+
+
+[vars]
+APP_ENV = "production"
+APP_TIMEZONE = "Africa/Cairo"
