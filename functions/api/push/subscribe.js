@@ -1,1 +1,2 @@
-
+import { json, fail, body, id, requireUser, requireOrigin } from '../../_lib/core.js';
+export async function onRequestPost({request,env}) { const oe=requireOrigin(request); if(oe) return oe; const a=await requireUser(request,env); if(a.error) return a.error; const d=await body(request); const s=d?.subscription; if(!s?.endpoint||!s?.keys?.p256dh||!s?.keys?.auth||String(s.endpoint).length>2000) return fail('بيانات الإشعار غير صحيحة'); await env.DB.prepare('INSERT INTO push_subscriptions(id,user_id,endpoint,p256dh,auth_secret) VALUES(?,?,?,?,?) ON CONFLICT(endpoint) DO UPDATE SET user_id=excluded.user_id,p256dh=excluded.p256dh,auth_secret=excluded.auth_secret').bind(id(),a.user.id,s.endpoint,s.keys.p256dh,s.keys.auth).run(); return json({ok:true}); }
