@@ -12,7 +12,7 @@ export async function verifyPassword(password, stored) { try { const [kind, roun
 function constantTime(a,b) { if (typeof a !== 'string' || typeof b !== 'string' || a.length !== b.length) return false; let n=0; for(let i=0;i<a.length;i++) n |= a.charCodeAt(i)^b.charCodeAt(i); return n===0; }
 export function cookie(name, value, maxAge) { return `${name}=${value}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${maxAge}`; }
 export function getCookie(request, name) { const raw=request.headers.get('Cookie')||''; const item=raw.split(';').map(x=>x.trim()).find(x=>x.startsWith(name+'=')); return item ? item.slice(name.length+1) : null; }
-export async function sessionUser(request, env) { const token=getCookie(request,'ride_session'); if(!token) return null; const hash=await sha256(token); const row=await env.DB.prepare(`SELECT u.id,u.full_name,u.email,u.phone,u.role,u.status FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=? AND s.expires_at > datetime('now')`).bind(hash).first(); return row || null; }
+export async function sessionUser(request, env) { const token=getCookie(request,'ride_session'); if(!token) return null; const hash=await sha256(token); const row=await env.DB.prepare(`SELECT u.id,u.full_name,u.email,u.phone,u.role,u.status,p.vehicle_type FROM sessions s JOIN users u ON u.id=s.user_id LEFT JOIN captain_profiles p ON p.user_id=u.id WHERE s.token_hash=? AND s.expires_at > datetime('now')`).bind(hash).first(); return row || null; }
 export async function requireUser(request, env, role) { const user=await sessionUser(request,env); if(!user) return { error:fail('سجل الدخول أولاً',401) }; if(role && user.role!==role) return { error:fail('غير مصرح لك بتنفيذ العملية',403) }; if(user.status!=='active') return { error:fail('الحساب غير مفعل حالياً',403) }; return { user }; }
 export function cairoDate() { return new Intl.DateTimeFormat('en-CA',{timeZone:'Africa/Cairo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date()); }
 export async function setting(env,key,fallback) { const r=await env.DB.prepare('SELECT setting_value FROM app_settings WHERE setting_key=?').bind(key).first(); return r?.setting_value ?? fallback; }
@@ -23,6 +23,11 @@ export async function rateLimit(request, env, action, limit = 10, windowSeconds 
  const ip=request.headers.get('CF-Connecting-IP')||'unknown'; const key=await sha256(`${action}:${ip}`);
  const row=await env.DB.prepare(`INSERT INTO rate_limits(rate_key,hits,window_start) VALUES(?,1,unixepoch()) ON CONFLICT(rate_key) DO UPDATE SET hits=CASE WHEN window_start <= unixepoch()-? THEN 1 ELSE hits+1 END, window_start=CASE WHEN window_start <= unixepoch()-? THEN unixepoch() ELSE window_start END RETURNING hits`).bind(key,windowSeconds,windowSeconds).first();
  return (row?.hits||0)>limit;
+}
+
+export async function clearRateLimit(request, env, action) {
+ const ip=request.headers.get('CF-Connecting-IP')||'unknown'; const key=await sha256(`${action}:${ip}`);
+ await env.DB.prepare('DELETE FROM rate_limits WHERE rate_key=?').bind(key).run();
 }
 
 export function addCalendarMonths(date, months) { const d=new Date(date); const day=d.getUTCDate(); d.setUTCDate(1); d.setUTCMonth(d.getUTCMonth()+months); const last=new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth()+1,0)).getUTCDate(); d.setUTCDate(Math.min(day,last)); return d.toISOString(); }
