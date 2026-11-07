@@ -31,7 +31,7 @@ npx wrangler d1 execute mishwark-db --remote --file=./db/migrations/0003_private
 ```
 هذه الترقية تضيف أعمدة BLOB خاصة للصور الشخصية والمستندات. لا تُعد تشغيلها على نفس قاعدة البيانات.
 
-لو كنت نفذت النسخة السابقة من `schema.sql` بالفعل على نفس قاعدة البيانات، **لا تعِد تشغيل المخطط كاملًا**؛ نفّذ ترقية الاشتراكات مرة واحدة فقط:
+لو كنت نفذت النسخة السابقة من `schema.sql` بالفعل على نفس قاعدة البيانات، **لا تعِد تشغيل المخطط كاملًا**. نفّذ فقط الترحيلات التي لم تُطبق بعد، وبالترتيب: `0002_captain_subscriptions.sql` ثم `0003_private_captain_documents.sql` ثم `0004_negotiation_price_limits.sql`. لا تُعد تشغيل ترحيل سبق تطبيقه. ترحيل الأسعار `0004` يحدّث إعدادات الحد الأدنى والأقصى للتفاوض.
 
 ```bash
 npx wrangler d1 execute mishwark-db --remote --file=./db/migrations/0002_captain_subscriptions.sql
@@ -52,7 +52,7 @@ npx wrangler d1 execute mishwark-db --remote --file=./db/migrations/0002_captain
 2. نفّذ `db/schema.sql`.
 3. أضف المتغيرات والأسرار.
 4. انشر Pages من GitHub مع Root directory فارغ، Build output directory = `public`. لا تحتاج bundler build لهذه الملفات؛ يمكن استخدام `npm run check` كفحص قبل النشر.
-5. افتح `/api/health` وتأكد من `database: ok`. ستظهر حالة `private_storage: d1-private` عند نجاح اتصال D1؛ الصور محفوظة كبيانات خاصة وتُعرض عبر endpoint محمي بجلسة الأدمن فقط.
+5. افتح `/api/health` وتأكد من `status: ready` و`database: ok` و`schema: ok`. إذا ظهرت جداول أو أعمدة ناقصة، طبّق المخطط/الترحيلات المطلوبة على قاعدة بيانات Preview نفسها قبل الاختبار. ستظهر حالة `private_storage: d1-private` عند اكتمال المخطط.
 6. أنشئ الأدمن مرة واحدة بطلب `POST /api/admin/bootstrap` مع Header اسمه `X-Admin-Bootstrap` وقيمة `ADMIN_BOOTSTRAP_TOKEN`، وJSON يحتوي `full_name`, `email`, `phone`, `password` (14 حرفًا على الأقل). بعد نجاح الإنشاء احذف السر فورًا.
 7. افتح `/admin/` لتسجيل دخول الأدمن.
 
