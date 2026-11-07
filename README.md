@@ -62,7 +62,7 @@ npx wrangler d1 execute mishwark-db --remote --file=./db/migrations/0002_captain
 - `GET/POST /api/admin/settings`
 - `GET/POST /api/admin/routes`
 - `GET/POST /api/admin/captains`
-- `GET/POST /api/admin/document-review`, `GET /api/admin/documents?key=...`
+- `GET/POST /api/admin/document-review`, `GET /api/admin/documents?id=...`
 - `GET /api/admin/stats`
 - `POST /api/captain/documents` (صور مضغوطة داخل D1)، `POST /api/captain/availability`, `GET /api/captain/summary`
 - `POST /api/rides/create`, `GET /api/rides/list`, `POST /api/rides/offer`, `GET /api/rides/offers?ride_id=...`, `POST /api/rides/accept-offer`, `POST /api/rides/status`
