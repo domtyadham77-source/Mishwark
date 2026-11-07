@@ -81,6 +81,6 @@ npx wrangler d1 execute mishwark-db --remote --file=./db/migrations/0002_captain
 
 أضف في Cloudflare Pages → Settings → Variables and Secrets → Production Secret:
 
-- `ADMIN_PANEL_PASSWORD`: كلمة مرور قوية وفريدة لا تقل عن 16 حرفًا. هذه هي كلمة المرور التي تظهر شاشة `/admin/`. لا تضعها في GitHub أو ملفات المشروع.
+- `ADMIN_PIN` أو `ADMIN_PANEL_PASSWORD`: كلمة مرور قوية وفريدة لا تقل عن 16 حرفًا. الكود يقبل `ADMIN_PANEL_PASSWORD` أولًا ثم `ADMIN_PIN` للتوافق مع اسم السر الموجود في ملف `.env.example`. هذه هي كلمة المرور التي تظهر شاشة `/admin/`. لا تضعها في GitHub أو ملفات المشروع.
 
 الدخول يتم عبر `POST /api/admin/login`، مع تحديد محاولات الدخول، وإنشاء جلسة HttpOnly/Secure لمدة 8 ساعات. جميع API الإدارة تستمر في التحقق من جلسة مستخدم بدور `admin` على السيرفر. تسجيل دخول الأدمن من مسار تسجيل الدخول العام مرفوض. يلزم إنشاء سجل الأدمن الأول مرة واحدة عبر `ADMIN_BOOTSTRAP_TOKEN` قبل استخدام شاشة الدخول.
