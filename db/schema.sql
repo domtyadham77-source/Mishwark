@@ -5,6 +5,8 @@ CREATE TABLE IF NOT EXISTS users (
   full_name TEXT NOT NULL,
   email TEXT NOT NULL COLLATE NOCASE,
   phone TEXT NOT NULL,
+  profile_photo_data BLOB,
+  profile_photo_mime TEXT,
   password_hash TEXT NOT NULL,
   role TEXT NOT NULL CHECK(role IN ('passenger','captain','admin')),
   status TEXT NOT NULL DEFAULT 'active' CHECK(status IN ('pending','active','suspended','rejected')),
