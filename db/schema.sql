@@ -27,6 +27,9 @@ CREATE TABLE IF NOT EXISTS captain_profiles (
   vehicle_year INTEGER,
   vehicle_plate TEXT,
   vehicle_color TEXT,
+  profile_photo_data BLOB,
+  profile_photo_mime TEXT,
+  profile_photo_status TEXT NOT NULL DEFAULT 'pending' CHECK(profile_photo_status IN ('pending','approved','rejected')),
   availability TEXT NOT NULL DEFAULT 'offline' CHECK(availability IN ('online','offline')),
   approved_at TEXT
 );
@@ -36,7 +39,10 @@ CREATE TABLE IF NOT EXISTS captain_documents (
   captain_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   document_type TEXT NOT NULL CHECK(document_type IN ('national_id','driving_license','vehicle_license')),
   side TEXT NOT NULL CHECK(side IN ('front','back')),
-  object_key TEXT NOT NULL,
+  object_key TEXT,
+  file_data BLOB,
+  mime_type TEXT,
+  file_size INTEGER,
   review_status TEXT NOT NULL DEFAULT 'pending' CHECK(review_status IN ('pending','approved','rejected')),
   uploaded_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
