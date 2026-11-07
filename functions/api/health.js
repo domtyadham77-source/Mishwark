@@ -10,7 +10,7 @@ export async function onRequestGet({ env }) {
     const missingTables = requiredTables.filter(name => !names.has(name));
     const requiredColumns = {
       users: ['deleted_at'],
-      captain_profiles: ['profile_photo_data','profile_photo_mime','profile_photo_status'],
+      captain_profiles: ['vehicle_type','profile_photo_data','profile_photo_mime','profile_photo_status'],
       captain_documents: ['file_data','mime_type','file_size']
     };
     const missingColumns = [];
