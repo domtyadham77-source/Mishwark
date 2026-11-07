@@ -21,7 +21,7 @@ export function requireOrigin(request) { return isSameOrigin(request) ? null : f
 
 export async function rateLimit(request, env, action, limit = 10, windowSeconds = 600) {
  const ip=request.headers.get('CF-Connecting-IP')||'unknown'; const key=await sha256(`${action}:${ip}`);
- const row=await env.DB.prepare(`INSERT INTO rate_limits(rate_key,hits,window_start) VALUES(?,1,unixepoch()) ON CONFLICT(rate_key) DO UPDATE SET hits=CASE WHEN window_start <= unixepoch()-? THEN 1 ELSE hits+1 END, window_start=CASE WHEN window_start <= unixepoch()-? THEN unixepoch() ELSE window_start END RETURNING hits`).bind(key,windowSeconds,windowSeconds).first();
+ const row=await env.DB.prepare(`INSERT INTO rate_limits(rate_key,hits,window_start) VALUES(?,1,unixepoch()) ON CONFLICT(rate_key) DO UPDATE SET hits=CASE WHEN window_start <= unixepoch()-? THEN 1 ELSE hits+1 END, window_start=CASE WHEN window_start <= unixepoch()-? OR hits <= ? THEN unixepoch() ELSE window_start END RETURNING hits`).bind(key,windowSeconds,windowSeconds,limit).first();
  return (row?.hits||0)>limit;
 }
 
