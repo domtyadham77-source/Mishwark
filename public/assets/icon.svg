@@ -1,1 +1,7 @@
-
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title id="title">مِشوارك</title>
+  <rect width="512" height="512" rx="112" fill="#171717"/>
+  <path d="M190 438c-31-68-47-124-47-177 0-91 46-158 113-187 67 29 113 96 113 187 0 53-16 109-47 177" fill="none" stroke="#d6a45b" stroke-width="42" stroke-linecap="round"/>
+  <path d="M256 95v58m0 57v58m0 57v58" fill="none" stroke="#fff" stroke-width="18" stroke-linecap="round"/>
+  <circle cx="256" cy="261" r="13" fill="#171717"/>
+</svg>
