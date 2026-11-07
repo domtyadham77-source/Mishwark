@@ -1,5 +1,15 @@
 import { json, fail, body, id, clean, validEmail, validPhone, passwordHash, requireOrigin, rateLimit, addCalendarMonths } from '../../_lib/core.js';
 
+async function recordRegistrationFailure(env, role, stage, error) {
+  const message = String(error?.message || 'unknown error').slice(0, 500);
+  try {
+    await env.DB.prepare('INSERT INTO audit_log(id,admin_id,action,target_type,target_id,details_json) VALUES(?,NULL,?,?,NULL,?)')
+      .bind(id(), `auth_${stage}_failed`, 'auth_registration', JSON.stringify({ role, message })).run();
+  } catch (auditError) {
+    console.error('[auth/register] could not persist diagnostic event', { role, stage, message: String(auditError?.message || 'unknown error') });
+  }
+}
+
 export async function onRequestPost({ request, env }) {
   const originError = requireOrigin(request);
   if (originError) return originError;
@@ -22,20 +32,26 @@ export async function onRequestPost({ request, env }) {
     if (await rateLimit(request, env, 'register', 5, 900)) return fail('محاولات تسجيل كثيرة. انتظر 15 دقيقة ثم حاول مرة أخرى', 429);
   } catch (error) {
     console.error('[auth/register] rate limiter unavailable', { message: error?.message || 'unknown error' });
+    await recordRegistrationFailure(env, role, 'rate_limit', error);
     return fail('خدمة التسجيل غير جاهزة حاليًا. حاول مرة أخرى لاحقًا.', 503);
   }
 
   let uid = null;
+  let stage = 'user_lookup';
   try {
     const exists = await env.DB.prepare('SELECT id FROM users WHERE (email=? OR phone=?) AND role=?').bind(email, phone, role).first();
     if (exists) return fail('يوجد حساب بهذا الهاتف أو البريد لنفس نوع الحساب', 409);
     uid = id();
+    stage = 'password_hash';
     const hash = await passwordHash(password);
+    stage = 'user_insert';
     await env.DB.prepare('INSERT INTO users(id,full_name,email,phone,password_hash,role,status) VALUES(?,?,?,?,?,?,?)').bind(uid,full_name,email,phone,hash,role,role==='captain'?'pending':'active').run();
 
     if (role === 'captain') {
+      stage = 'captain_profile_insert';
       const wallet = ['vodafone_cash','orange_cash'].includes(p.wallet_provider) ? p.wallet_provider : null;
       await env.DB.prepare(`INSERT INTO captain_profiles(user_id,vehicle_type,wallet_provider,wallet_number,wallet_owner_name,instapay_address,instapay_owner_name,vehicle_make,vehicle_model,vehicle_year,vehicle_plate,vehicle_color) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)`).bind(uid,p.vehicle_type,wallet,clean(p.wallet_number,30)||null,clean(p.wallet_owner_name,100)||null,clean(p.instapay_address,100)||null,clean(p.instapay_owner_name,100)||null,clean(p.vehicle_make,60),clean(p.vehicle_model,60),Number(p.vehicle_year),clean(p.vehicle_plate,30),clean(p.vehicle_color,40)).run();
+      stage = 'captain_subscription_setup';
       const enabled = await env.DB.prepare("SELECT setting_value FROM app_settings WHERE setting_key='captain_trial_enabled'").first();
       const offer = await env.DB.prepare("SELECT id,trial_months FROM subscription_offers WHERE active=1 AND (starts_at IS NULL OR julianday(starts_at)<=julianday('now')) AND (ends_at IS NULL OR julianday(ends_at)>julianday('now')) ORDER BY created_at DESC,rowid DESC LIMIT 1").first();
       const trialOn = (enabled?.setting_value ?? '1') === '1' && !!offer;
@@ -46,6 +62,7 @@ export async function onRequestPost({ request, env }) {
       if (months) await env.DB.prepare("INSERT INTO user_notifications(id,user_id,notification_type,title,message,dedupe_key) VALUES(?,?,'trial_started','مبروك! عندك فترة مجانية',?,'trial-start-'||?)").bind(id(),uid,`مبروك! عندك ${months} شهور مجانًا تقدر تشتغل بيهم بصافي 100% من قيمة مشاويرك، من غير اشتراك خلال الفترة المجانية. الفترة بدأت من تاريخ تسجيلك وتنتهي ${ends.slice(0,10)}.`,uid).run();
     }
 
+    stage = 'registration_complete';
     let message = 'تم إنشاء الحساب، يمكنك تسجيل الدخول.';
     if (role === 'captain') {
       const sub = await env.DB.prepare('SELECT s.status,s.trial_ends_at,o.trial_months FROM captain_subscriptions s LEFT JOIN subscription_offers o ON o.id=s.offer_id WHERE s.captain_id=?').bind(uid).first();
@@ -57,7 +74,8 @@ export async function onRequestPost({ request, env }) {
   } catch (error) {
     if (uid) await env.DB.prepare('DELETE FROM users WHERE id=?').bind(uid).run().catch(() => {});
     const message = String(error?.message || 'unknown error');
-    console.error('[auth/register] registration failed', { role, message });
+    console.error('[auth/register] registration failed', { role, stage, message });
+    await recordRegistrationFailure(env, role, stage, error);
     if (/UNIQUE constraint failed/i.test(message)) return fail('يوجد حساب بهذا الهاتف أو البريد لنفس نوع الحساب',409);
     return fail('تعذر إنشاء الحساب بسبب مشكلة في قاعدة البيانات أو إعدادات الخدمة. تم تسجيل الخطأ للمراجعة؛ حاول لاحقًا.',503);
   }
