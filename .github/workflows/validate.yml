@@ -1,0 +1,34 @@
+name: Validate project
+on:
+  push:
+    branches: [main, fix/admin-query-and-pwa-icon]
+  pull_request:
+    branches: [main]
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check every JavaScript file
+        run: find functions public -name '*.js' -print0 | xargs -0 -n1 node --check
+      - name: Validate JSON files
+        run: |
+          node -e "JSON.parse(require('fs').readFileSync('package.json','utf8'))"
+          node -e "JSON.parse(require('fs').readFileSync('public/manifest.webmanifest','utf8'))"
+      - name: Validate fresh D1 schema
+        run: |
+          python3 - <<'PY'
+          import sqlite3
+          from pathlib import Path
+          db = sqlite3.connect(':memory:')
+          db.executescript(Path('db/schema.sql').read_text(encoding='utf-8'))
+          required = ['users', 'sessions', 'rate_limits', 'rides', 'ride_offers', 'captain_profiles', 'captain_documents', 'app_settings', 'captain_subscriptions']
+          present = {row[0] for row in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+          missing = sorted(set(required) - present)
+          if missing:
+              raise SystemExit('Missing schema tables: ' + ', '.join(missing))
+          print('D1 schema OK')
+          PY
