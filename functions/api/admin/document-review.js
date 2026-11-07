@@ -1,7 +1,7 @@
 import { json, fail, body, requireUser, id, requireOrigin } from '../../_lib/core.js';
 export async function onRequestGet({request,env}) {
  const a=await requireUser(request,env,'admin'); if(a.error) return a.error;
- const docs=await env.DB.prepare("SELECT d.id,d.captain_id,d.document_type,d.side,d.review_status,d.uploaded_at,u.full_name,CASE WHEN d.file_data IS NULL THEN 0 ELSE 1 END AS has_file FROM captain_documents d JOIN users u ON u.id=d.captain_id ORDER BY d.uploaded_at DESC LIMIT 300").all();
+ const docs=await env.DB.prepare("SELECT d.id,d.captain_id,d.document_type,d.side,d.review_status,d.uploaded_at,u.full_name,CASE WHEN d.file_data IS NULL THEN 0 ELSE 1 END AS has_file FROM captain_documents d JOIN users u ON u.id=d.captain_id WHERE d.file_data IS NOT NULL ORDER BY d.uploaded_at DESC LIMIT 300").all();
  const photos=await env.DB.prepare("SELECT 'profile:'||p.user_id AS id,p.user_id AS captain_id,'profile_photo' AS document_type,'front' AS side,p.profile_photo_status AS review_status,u.created_at AS uploaded_at,u.full_name,CASE WHEN p.profile_photo_data IS NULL THEN 0 ELSE 1 END AS has_file FROM captain_profiles p JOIN users u ON u.id=p.user_id WHERE p.profile_photo_data IS NOT NULL ORDER BY u.created_at DESC LIMIT 200").all();
  return json({ok:true,documents:[...(photos.results||[]),...(docs.results||[])]});
 }
