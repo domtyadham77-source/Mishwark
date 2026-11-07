@@ -20,8 +20,9 @@ function updateCaptainDocumentLabels(){
  const hint=$('captainUpload').querySelector('p');if(hint)hint.textContent='ارفع صورة شخصية، ورخصة القيادة الشخصية من الوجهين، ورخصة '+name+' من الوجهين، وصورة واضحة لـ'+name+'.';
 }
 $('authForm').elements.vehicle_type?.addEventListener('change',updateCaptainDocumentLabels);
+updateCaptainDocumentLabels();$('documentType').dispatchEvent(new Event('change'));
 $('documentType').addEventListener('change',()=>{const back=$('documentSide').querySelector('option[value="back"]');const profile=$('documentType').value==='profile_photo'||$('documentType').value==='vehicle_photo';back.hidden=profile;if(profile)$('documentSide').value='front';});
-$('documentForm').addEventListener('submit',async e=>{e.preventDefault();const f=new FormData(e.currentTarget);$('documentMessage').textContent='جاري ضغط الصورة وإرسالها...';try{const original=f.get('file');const compressed=await compressDocumentImage(original);f.set('file',compressed,compressed.name);const r=await fetch('/api/captain/documents',{method:'POST',body:f});const d=await r.json();$('documentMessage').textContent=d.message||d.error||'تعذر رفع الملف';if(r.ok)e.currentTarget.reset();}catch(err){$('documentMessage').textContent=err.message||'تعذر ضغط الصورة أو رفعها. حاول مرة أخرى.';}});
+$('documentForm').addEventListener('submit',async e=>{e.preventDefault();const f=new FormData(e.currentTarget);$('documentMessage').textContent='جاري ضغط الصورة وإرسالها...';try{const original=f.get('file');const compressed=await compressDocumentImage(original);f.set('file',compressed,compressed.name);const r=await fetch('/api/captain/documents',{method:'POST',body:f});const d=await r.json();$('documentMessage').textContent=d.message||d.error||'تعذر رفع الملف';if(r.ok){e.currentTarget.reset();$('documentType').dispatchEvent(new Event('change'));}}catch(err){$('documentMessage').textContent=err.message||'تعذر ضغط الصورة أو رفعها. حاول مرة أخرى.';}});
 
 async function loadCaptainSubscription(){
  const panel=$('captainSubscription'); if(!panel)return;
