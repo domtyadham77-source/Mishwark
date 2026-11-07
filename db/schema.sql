@@ -209,6 +209,8 @@ CREATE INDEX IF NOT EXISTS idx_notifications_user ON user_notifications(user_id,
 
 INSERT OR IGNORE INTO app_settings(setting_key,setting_value) VALUES
  ('captain_monthly_fee_piasters','10000'),
+ ('negotiation_min_piasters','2500'),
+ ('negotiation_max_piasters','5000'),
  ('captain_trial_enabled','1'),
  ('captain_trial_months','3'),
  ('captain_subscription_wallet_number',''),
