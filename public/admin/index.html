@@ -1,6 +1,30 @@
 <!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>إدارة مِشوارك</title><link rel="stylesheet" href="/styles.css"><style>
 .admin-wrap{max-width:1100px;margin:28px auto;padding:16px}.admin-panel{background:#1b1b1b;border:1px solid #333;border-radius:18px;padding:20px;margin:14px 0}.admin-panel input,.admin-panel select,.admin-panel textarea{display:block;width:100%;padding:11px;margin:8px 0;background:#111;color:#fff;border:1px solid #444;border-radius:10px}.admin-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.admin-item{padding:14px;background:#242424;border:1px solid #333;border-radius:12px;min-width:0}.admin-item button{margin:4px}.admin-actions{display:flex;gap:6px;flex-wrap:wrap}.admin-actions button{font-size:13px}.hide{display:none}.muted{color:#aaa}.admin-item p{overflow-wrap:anywhere}@media(max-width:680px){.admin-grid{grid-template-columns:1fr}}
-</style></head><body><main class="admin-wrap"><a class="brand" href="/">مِشوارك <span class="eyebrow">لوحة الإدارة</span></a>
+</style><style>
+.password-field{position:relative;display:block;width:100%;direction:ltr}
+.password-field>input{direction:rtl;text-align:right;padding-left:50px!important}
+.password-eye{position:absolute;left:8px;top:50%;transform:translateY(-50%);width:35px;height:35px;display:grid;place-items:center;padding:6px;border:1px solid #67442f;border-radius:11px;background:#2b211b;color:var(--orange);cursor:pointer}
+.password-eye svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.password-eye.shown{background:var(--orange);color:#17120f;border-color:var(--orange)}
+.vehicle-choice{display:flex;flex-direction:column;gap:9px;padding:14px;border:1px solid #67442f;border-radius:16px;background:linear-gradient(145deg,#302219,#1d1a18);color:#ffe0ca}
+.vehicle-type-select{appearance:none;width:100%;padding:13px 15px;border:1px solid #9a633d;border-radius:12px;background:#151311;color:#fff;font:inherit;outline:none}
+.vehicle-type-select:focus{border-color:var(--orange);box-shadow:0 0 0 3px #ff812e24}
+.vehicle-type-select option{background:#1b1b1b;color:#fff}
+</style>
+<script>
+(()=>{function attach(input){
+ if(!input||input.dataset.eyeAttached==='1')return;input.dataset.eyeAttached='1';
+ const wrap=document.createElement('span');wrap.className='password-field';input.parentNode.insertBefore(wrap,input);wrap.appendChild(input);
+ const btn=document.createElement('button');btn.type='button';btn.className='password-eye';btn.setAttribute('aria-label','إظهار كلمة المرور');btn.setAttribute('aria-pressed','false');
+ btn.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>';
+ btn.addEventListener('click',()=>{const show=input.type==='password';input.type=show?'text':'password';btn.classList.toggle('shown',show);btn.setAttribute('aria-pressed',String(show));btn.setAttribute('aria-label',show?'إخفاء كلمة المرور':'إظهار كلمة المرور');input.focus({preventScroll:true});});wrap.appendChild(btn);
+ }
+ const scan=()=>document.querySelectorAll('input[type="password"]').forEach(attach);
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',scan);else scan();
+ new MutationObserver(scan).observe(document.documentElement,{childList:true,subtree:true});
+})();
+</script>
+</head><body><main class="admin-wrap"><a class="brand" href="/">مِشوارك <span class="eyebrow">لوحة الإدارة</span></a>
 <section class="admin-panel" id="loginPanel"><h1>منطقة إدارة محمية</h1><p class="muted">أدخل كلمة مرور لوحة الإدارة للمتابعة.</p><form id="login"><input name="password" type="password" placeholder="كلمة مرور الإدارة" autocomplete="current-password" required><button class="primary">دخول</button></form><p id="message" class="muted" role="status"></p></section>
 <section id="dashboard" class="hide"><div class="admin-panel"><button id="refresh" class="secondary">تحديث البيانات</button> <button id="logout" class="ghost">تسجيل الخروج</button><h2>ملخص النظام</h2><div id="stats" class="admin-grid"></div></div>
 <div class="admin-panel"><h2>إدارة الكباتن والاشتراكات</h2><p class="muted">التجديد يبدأ 30 يومًا من لحظة ضغط الأدمن على زر التجديد. الإيقاف المؤقت لا يحذف الحساب.</p><div id="captains" class="admin-grid"></div></div>
