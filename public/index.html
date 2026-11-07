@@ -23,7 +23,7 @@
       <form id="rideRequestForm"><label>ابحث برقم العمارة<input id="rideMapSearch" inputmode="numeric" placeholder="مثال: 751"></label>
       <div class="ride-select-row"><button type="button" class="secondary" id="pickPickup">اختيار نقطة الركوب</button><button type="button" class="secondary" id="pickDestination">اختيار الوجهة</button></div>
       <p id="pickupLabel" class="notice">لم يتم اختيار نقطة الركوب</p><p id="destinationLabel" class="notice">لم يتم اختيار الوجهة</p>
-      <p class="muted">العلامة بتحدد القطاع الذي تقع فيه العمارة؛ تحديد مكان المبنى بدقة ومسار الشوارع النهائيين يحتاجان استكمال بيانات الطرق التفصيلية.</p><div class="ride-map-viewport"><svg id="rideMapSvg" viewBox="0 0 664 1620" role="img" aria-label="خريطة قطاعات المدينة التفاعلية"></svg></div><div id="buildingChoices" class="building-modal" hidden></div>
+      <p class="muted">الخريطة تحدد العمارة داخل البلوك، وترسم أقصر خط مستقيم بين النقطتين. موضع العمارة داخل البلوك تقريبي، والخط لا يمثل مسار الشوارع.</p><div class="ride-map-viewport"><svg id="rideMapSvg" viewBox="0 0 664 1620" role="img" aria-label="خريطة قطاعات المدينة التفاعلية"></svg></div><div id="buildingChoices" class="building-modal" hidden></div>
       <label>السعر المبدئي: <b id="ridePriceValue">25 جنيه</b><input id="ridePrice" type="range" min="25" max="50" step="1" value="25"></label>
       <label>طريقة الدفع<select id="ridePayment"><option value="cash">كاش</option><option value="vodafone_cash">فودافون كاش</option><option value="orange_cash">أورنج كاش</option><option value="instapay">إنستا باي</option></select></label>
       <button class="primary" id="rideSubmit" type="submit" disabled>إرسال طلب الرحلة</button><p id="rideRequestMessage" role="status"></p></form></section>
