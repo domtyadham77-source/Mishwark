@@ -78,8 +78,9 @@ function setAppScreen(id){
  window.__mishwarkScreen=id;
  document.body.classList.toggle('is-authenticated',!!mishwarkUser);
  $('hero')?.classList.toggle('screen-hidden',!!mishwarkUser);
- document.querySelector('.hero')?.toggleAttribute('hidden',!!mishwarkUser);
- document.querySelector('.features')?.toggleAttribute('hidden',!!mishwarkUser);
+ const landing=(id==='landing');
+ document.querySelector('.hero')?.toggleAttribute('hidden',!landing);
+ document.querySelector('.features')?.toggleAttribute('hidden',!landing);
  screenIds.forEach(x=>{const el=$(x);if(el)el.hidden=x!==id;});
  $('menuBtn').hidden=!mishwarkUser;
  $('bottomNav').hidden=!mishwarkUser;
