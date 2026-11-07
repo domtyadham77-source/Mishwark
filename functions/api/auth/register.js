@@ -15,11 +15,11 @@ export async function onRequestPost({ request, env }) {
   if (!validEmail(email) || !validPhone(phone)) return fail('راجع البريد الإلكتروني ورقم الهاتف');
   if (password.length < 10 || password.length > 128) return fail('كلمة المرور يجب ألا تقل عن 10 أحرف');
   const p = data.profile && typeof data.profile === 'object' ? data.profile : {};
-  if (role === 'captain' && (!clean(p.vehicle_make,60) || !clean(p.vehicle_model,60) || !clean(p.vehicle_color,40) || !clean(p.vehicle_plate,30) || !Number.isInteger(Number(p.vehicle_year)) || Number(p.vehicle_year)<1980 || Number(p.vehicle_year)>2035)) return fail('بيانات المركبة الأساسية مطلوبة');
+  if (role === 'captain' && (!['motorcycle','car'].includes(p.vehicle_type) || !clean(p.vehicle_make,60) || !clean(p.vehicle_model,60) || !clean(p.vehicle_color,40) || !clean(p.vehicle_plate,30) || !Number.isInteger(Number(p.vehicle_year)) || Number(p.vehicle_year)<1980 || Number(p.vehicle_year)>2035)) return fail('بيانات المركبة الأساسية مطلوبة');
 
   // Only structurally valid requests consume the registration attempt quota.
   try {
-    if (await rateLimit(request, env, 'register', 5, 3600)) return fail('محاولات تسجيل كثيرة. انتظر ساعة ثم حاول مرة أخرى', 429);
+    if (await rateLimit(request, env, 'register', 5, 900)) return fail('محاولات تسجيل كثيرة. انتظر 15 دقيقة ثم حاول مرة أخرى', 429);
   } catch (error) {
     console.error('[auth/register] rate limiter unavailable', { message: error?.message || 'unknown error' });
     return fail('خدمة التسجيل غير جاهزة حاليًا. حاول مرة أخرى لاحقًا.', 503);
@@ -35,7 +35,7 @@ export async function onRequestPost({ request, env }) {
 
     if (role === 'captain') {
       const wallet = ['vodafone_cash','orange_cash'].includes(p.wallet_provider) ? p.wallet_provider : null;
-      await env.DB.prepare(`INSERT INTO captain_profiles(user_id,wallet_provider,wallet_number,wallet_owner_name,instapay_address,instapay_owner_name,vehicle_make,vehicle_model,vehicle_year,vehicle_plate,vehicle_color) VALUES(?,?,?,?,?,?,?,?,?,?,?)`).bind(uid,wallet,clean(p.wallet_number,30)||null,clean(p.wallet_owner_name,100)||null,clean(p.instapay_address,100)||null,clean(p.instapay_owner_name,100)||null,clean(p.vehicle_make,60),clean(p.vehicle_model,60),Number(p.vehicle_year),clean(p.vehicle_plate,30),clean(p.vehicle_color,40)).run();
+      await env.DB.prepare(`INSERT INTO captain_profiles(user_id,vehicle_type,wallet_provider,wallet_number,wallet_owner_name,instapay_address,instapay_owner_name,vehicle_make,vehicle_model,vehicle_year,vehicle_plate,vehicle_color) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)`).bind(uid,p.vehicle_type,wallet,clean(p.wallet_number,30)||null,clean(p.wallet_owner_name,100)||null,clean(p.instapay_address,100)||null,clean(p.instapay_owner_name,100)||null,clean(p.vehicle_make,60),clean(p.vehicle_model,60),Number(p.vehicle_year),clean(p.vehicle_plate,30),clean(p.vehicle_color,40)).run();
       const enabled = await env.DB.prepare("SELECT setting_value FROM app_settings WHERE setting_key='captain_trial_enabled'").first();
       const offer = await env.DB.prepare("SELECT id,trial_months FROM subscription_offers WHERE active=1 AND (starts_at IS NULL OR julianday(starts_at)<=julianday('now')) AND (ends_at IS NULL OR julianday(ends_at)>julianday('now')) ORDER BY created_at DESC,rowid DESC LIMIT 1").first();
       const trialOn = (enabled?.setting_value ?? '1') === '1' && !!offer;
