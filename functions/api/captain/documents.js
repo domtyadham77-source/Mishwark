@@ -16,7 +16,7 @@ export async function onRequestPost({request,env}) {
   await env.DB.prepare("UPDATE captain_profiles SET profile_photo_data=?,profile_photo_mime=?,profile_photo_status='pending' WHERE user_id=?").bind(bytes,file.type,user.id).run();
  } else {
   if(!TYPES.includes(type)||!['front','back'].includes(side)) return fail('نوع المستند أو الوجه غير صحيح');
-  await env.DB.prepare("INSERT INTO captain_documents(id,captain_id,document_type,side,object_key,file_data,mime_type,file_size,review_status) VALUES(?,?,?,?,NULL,?,?,?,'pending') ON CONFLICT(captain_id,document_type,side) DO UPDATE SET object_key=NULL,file_data=excluded.file_data,mime_type=excluded.mime_type,file_size=excluded.file_size,review_status='pending',uploaded_at=CURRENT_TIMESTAMP").bind(id(),user.id,type,side,bytes,file.type,bytes.byteLength).run();
+  await env.DB.prepare("INSERT INTO captain_documents(id,captain_id,document_type,side,object_key,file_data,mime_type,file_size,review_status) VALUES(?,?,?,?, '',?,?,?,'pending') ON CONFLICT(captain_id,document_type,side) DO UPDATE SET object_key='',file_data=excluded.file_data,mime_type=excluded.mime_type,file_size=excluded.file_size,review_status='pending',uploaded_at=CURRENT_TIMESTAMP").bind(id(),user.id,type,side,bytes,file.type,bytes.byteLength).run();
  }
  return json({ok:true,message:'تم إرسال الصورة إلى لوحة الإدارة للمراجعة'},201);
 }
