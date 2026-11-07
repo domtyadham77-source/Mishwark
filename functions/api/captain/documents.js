@@ -1,5 +1,5 @@
 import { json, fail, sessionUser, id, requireOrigin } from '../../_lib/core.js';
-const TYPES=['national_id','driving_license','vehicle_license'];
+const TYPES=['driving_license','vehicle_license','vehicle_photo'];
 const MAX=1800000;
 export async function onRequestPost({request,env}) {
  const oe=requireOrigin(request); if(oe) return oe;
@@ -15,7 +15,9 @@ export async function onRequestPost({request,env}) {
   if(side!=='front') return fail('الصورة الشخصية لا تحتاج وجهًا خلفيًا');
   await env.DB.batch([env.DB.prepare("UPDATE captain_profiles SET profile_photo_data=?,profile_photo_mime=?,profile_photo_status='pending',availability='offline',approved_at=NULL WHERE user_id=?").bind(bytes,file.type,user.id),env.DB.prepare("UPDATE users SET status='pending',updated_at=CURRENT_TIMESTAMP WHERE id=? AND role='captain'").bind(user.id)]);
  } else {
-  if(!TYPES.includes(type)||!['front','back'].includes(side)) return fail('نوع المستند أو الوجه غير صحيح');
+  if(!TYPES.includes(type)||!['front','back'].includes(side)||(type==='vehicle_photo'&&side!=='front')) return fail('نوع المستند أو الوجه غير صحيح');
+  const profile=await env.DB.prepare('SELECT vehicle_type FROM captain_profiles WHERE user_id=?').bind(user.id).first();
+  if(!profile||!['motorcycle','car'].includes(profile.vehicle_type)) return fail('نوع المركبة غير محدد للحساب',409);
   await env.DB.batch([env.DB.prepare("INSERT INTO captain_documents(id,captain_id,document_type,side,object_key,file_data,mime_type,file_size,review_status) VALUES(?,?,?,?, '',?,?,?,'pending') ON CONFLICT(captain_id,document_type,side) DO UPDATE SET object_key='',file_data=excluded.file_data,mime_type=excluded.mime_type,file_size=excluded.file_size,review_status='pending',uploaded_at=CURRENT_TIMESTAMP").bind(id(),user.id,type,side,bytes,file.type,bytes.byteLength),env.DB.prepare("UPDATE users SET status='pending',updated_at=CURRENT_TIMESTAMP WHERE id=? AND role='captain'").bind(user.id),env.DB.prepare("UPDATE captain_profiles SET availability='offline',approved_at=NULL WHERE user_id=?").bind(user.id)]);
  }
  return json({ok:true,message:'تم إرسال الصورة إلى لوحة الإدارة للمراجعة'},201);
