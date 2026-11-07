@@ -1,7 +1,7 @@
 const $ = (id) => document.getElementById(id);
 const boot = $('boot'), app = $('app'), offline = $('offline');
 let deferredInstallPrompt = null, selectedRole = 'passenger', authMode = 'register';
-function showOnlineState() { const online=navigator.onLine; offline.hidden=online; app.hidden=!online; boot.hidden=true; }
+function showOnlineState() { const online=navigator.onLine; offline.hidden=true; app.hidden=false; boot.hidden=true; document.body.classList.toggle('is-offline',!online); let banner=$('connectionBanner'); if(!banner){banner=document.createElement('div');banner.id='connectionBanner';banner.className='connection-banner';banner.setAttribute('role','status');banner.textContent='أنت غير متصل بالإنترنت. تقدر تتصفح الشاشات المحفوظة، والطلبات هتحتاج اتصال.'; $('app').prepend(banner);} banner.hidden=online; }
 window.addEventListener('online',showOnlineState); window.addEventListener('offline',showOnlineState);
 $('retryBtn').addEventListener('click',async()=>{try{const r=await fetch('/api/health',{cache:'no-store'});if(r.ok)showOnlineState();}catch{offline.hidden=false;}});
 function setMode(mode){authMode=mode;$('showRegister').classList.toggle('active',mode==='register');$('showLogin').classList.toggle('active',mode==='login');$('authTitle').textContent=mode==='register'?'إنشاء حساب جديد':'تسجيل الدخول';$('authSubmit').textContent=mode==='register'?'إنشاء الحساب':'دخول';$('authForm').elements.full_name.closest('label').hidden=mode==='login';$('authForm').elements.email.closest('label').hidden=mode==='login';$('authForm').elements.phone.closest('label').hidden=false;$('authForm').elements.full_name.required=mode==='register';$('authForm').elements.email.required=mode==='register';$('authForm').elements.phone.required=true;$('authForm').elements.phone.type=mode==='login'?'text':'tel';$('authForm').elements.phone.autocomplete=mode==='login'?'username':'tel';$('authForm').elements.phone.placeholder=mode==='login'?'اكتب رقم الهاتف أو البريد الإلكتروني':'اكتب رقم هاتفك';const phoneLabel=$('authForm').elements.phone.closest('label');if(phoneLabel?.firstChild)phoneLabel.firstChild.textContent=mode==='login'?'رقم الهاتف أو البريد الإلكتروني':'رقم الهاتف';$('captainFields').hidden=mode==='login'||selectedRole!=='captain';['vehicle_type','vehicle_make','vehicle_model','vehicle_color','vehicle_plate','vehicle_year'].forEach(n=>{$('authForm').elements[n].required=mode==='register'&&selectedRole==='captain';});$('captainUpload').hidden=true;$('authForm').elements.password.autocomplete=mode==='login'?'current-password':'new-password';$('authMessage').textContent='';}
@@ -73,15 +73,20 @@ function roleScreens(){
   ?[{id:'captainRideBoard',icon:'⌂',label:'الرئيسية'},{id:'captainMaps',icon:'▦',label:'الخرائط'},{id:'captainSubscription',icon:'◷',label:'الاشتراك'}]
   :[{id:'passengerRide',icon:'⌖',label:'اطلب مشوار'},{id:'passengerOffers',icon:'▤',label:'رحلاتي'}];
 }
-function setAppScreen(id){
+let screenHistory=[];
+function setAppScreen(id,direction='forward',fromHistory=false){
  if(!screenIds.includes(id))return;
+ const previous=window.__mishwarkScreen;
+ if(previous===id)return;
+ if(!fromHistory&&previous&&previous!=='landing')screenHistory.push(previous);
+
  window.__mishwarkScreen=id;
  document.body.classList.toggle('is-authenticated',!!mishwarkUser);
  $('hero')?.classList.toggle('screen-hidden',!!mishwarkUser);
  const landing=(id==='landing');
  document.querySelector('.hero')?.toggleAttribute('hidden',!landing);
  document.querySelector('.features')?.toggleAttribute('hidden',!landing);
- screenIds.forEach(x=>{const el=$(x);if(el)el.hidden=x!==id;});
+ screenIds.forEach(x=>{const el=$(x);if(el){el.hidden=x!==id;if(x===id){el.classList.remove('screen-enter-forward','screen-enter-back');void el.offsetWidth;el.classList.add(direction==='back'?'screen-enter-back':'screen-enter-forward');}}});
  $('menuBtn').hidden=!mishwarkUser;
  $('bottomNav').hidden=!mishwarkUser;
  if(mishwarkUser){
@@ -99,13 +104,13 @@ function setAppScreen(id){
  if(id==='captainSubscription'&&mishwarkUser?.role==='captain')loadCaptainSubscription();
 }
 function showLanding(){
- mishwarkUser=null;window.__mishwarkScreen='landing';document.body.classList.remove('is-authenticated');
+ screenHistory=[];mishwarkUser=null;window.__mishwarkScreen='landing';document.body.classList.remove('is-authenticated');
  screenIds.forEach(x=>{const el=$(x);if(el)el.hidden=true;});
  document.querySelector('.hero')?.removeAttribute('hidden');document.querySelector('.features')?.removeAttribute('hidden');
  $('menuBtn').hidden=true;$('bottomNav').hidden=true;$('appDrawer').classList.remove('open');
 }
 function openAuthenticatedApp(user){
- mishwarkUser=user;selectedRole=user.role;
+ screenHistory=[];mishwarkUser=user;selectedRole=user.role;
  document.body.classList.add('is-authenticated');
  $('authForm').reset();
  if(user.role==='captain'){
@@ -133,12 +138,12 @@ function setAuthRole(role){
 document.addEventListener('click',e=>{
  const roleBtn=e.target.closest('[data-go]');
  if(roleBtn){e.preventDefault();e.stopImmediatePropagation();setAuthRole(roleBtn.dataset.go);return;}
- if(e.target.closest('#backBtn')){e.preventDefault();e.stopImmediatePropagation();showLanding();return;}
+ if(e.target.closest('#backBtn')){e.preventDefault();e.stopImmediatePropagation();setAppScreen('landing','back');showLanding();return;}
  if(e.target.closest('#menuBtn')){const open=!$('appDrawer').classList.contains('open');$('appDrawer').classList.toggle('open',open);$('appDrawer').setAttribute('aria-hidden',String(!open));$('menuBtn').setAttribute('aria-expanded',String(open));return;}
  if(e.target.closest('[data-close-drawer]')){$('appDrawer').classList.remove('open');$('appDrawer').setAttribute('aria-hidden','true');$('menuBtn').setAttribute('aria-expanded','false');return;}
  const screenBtn=e.target.closest('[data-screen]');
  if(screenBtn){e.preventDefault();setAppScreen(screenBtn.dataset.screen);return;}
- if(e.target.closest('[data-back-home]')){setAppScreen(mishwarkUser?.role==='captain'?'captainRideBoard':'passengerRide');return;}
+ if(e.target.closest('[data-back-home]')){const prior=screenHistory.pop();setAppScreen(prior||(mishwarkUser?.role==='captain'?'captainRideBoard':'passengerRide'),'back',true);return;}
  if(e.target.closest('#logoutBtn')){e.preventDefault();fetch('/api/auth/logout',{method:'POST'}).catch(()=>{}).finally(showLanding);}
 },true);
 
