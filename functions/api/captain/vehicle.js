@@ -17,7 +17,7 @@ export async function onRequestPost({request,env}) {
   if(activeRide) return fail('لا يمكن تغيير نوع المركبة أثناء وجود رحلة نشطة. أنهِ الرحلة أولاً.',409);
   await env.DB.batch([
     env.DB.prepare("UPDATE captain_profiles SET vehicle_type=?,vehicle_make=?,vehicle_model=?,vehicle_color=?,vehicle_plate=?,vehicle_year=?,availability='offline',approved_at=NULL WHERE user_id=?").bind(type,make,model,color,plate,year,user.id),
-    env.DB.prepare("DELETE FROM captain_documents WHERE captain_id=? AND document_type IN ('vehicle_license','vehicle_photo')").bind(user.id),
+    env.DB.prepare("UPDATE captain_documents SET review_status='pending',uploaded_at=CURRENT_TIMESTAMP WHERE captain_id=? AND document_type IN ('vehicle_license','vehicle_photo')").bind(user.id),
     env.DB.prepare("UPDATE users SET status='pending',updated_at=CURRENT_TIMESTAMP WHERE id=? AND role='captain'").bind(user.id)
   ]);
   return json({ok:true,message:'تم تغيير نوع المركبة وحفظ بياناتها. الحساب الآن في انتظار مراجعة الإدارة؛ ارفع رخصة وصورة المركبة الجديدة من ملفك الشخصي.'});
