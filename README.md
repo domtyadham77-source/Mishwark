@@ -25,6 +25,12 @@
 npx wrangler d1 execute mishwark-db --remote --file=./db/schema.sql
 ```
 
+لو قاعدة البيانات موجودة بالفعل وتحتوي على الجداول القديمة، نفّذ ترقية تخزين الصور مرة واحدة بعد ذلك:
+```bash
+npx wrangler d1 execute mishwark-db --remote --file=./db/migrations/0003_private_captain_documents.sql
+```
+هذه الترقية تضيف أعمدة BLOB خاصة للصور الشخصية والمستندات. لا تُعد تشغيلها على نفس قاعدة البيانات.
+
 لو كنت نفذت النسخة السابقة من `schema.sql` بالفعل على نفس قاعدة البيانات، **لا تعِد تشغيل المخطط كاملًا**؛ نفّذ ترقية الاشتراكات مرة واحدة فقط:
 
 ```bash
