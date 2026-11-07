@@ -11,3 +11,10 @@ database_id = "38822321-6f6e-4e02-9564-8abe981e3606"
 [vars]
 APP_ENV = "production"
 APP_TIMEZONE = "Africa/Cairo"
+
+[observability]
+enabled = true
+head_sampling_rate = 1
+
+[observability.logs]
+invocation_logs = true
