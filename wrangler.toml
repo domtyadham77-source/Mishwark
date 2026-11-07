@@ -6,7 +6,6 @@ pages_build_output_dir = "public"
 binding = "DB"
 database_name = "mishwark-db"
 database_id = "38822321-6f6e-4e02-9564-8abe981e3606"
-migrations_dir = "db/migrations"
 
 
 [vars]
