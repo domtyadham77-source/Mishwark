@@ -10,7 +10,7 @@ export async function onRequestPost({request,env}) {
  const captain=await env.DB.prepare("SELECT id FROM users WHERE id=? AND role='captain'").bind(d.captain_id).first(); if(!captain) return fail('الكابتن غير موجود',404);
  if(d.action==='status') {
   if(!['active','rejected','suspended'].includes(d.status)) return fail('الحالة غير صحيحة');
-  if(d.status==='active'){const docs=await env.DB.prepare("SELECT COUNT(*) AS n FROM captain_documents WHERE captain_id=? AND review_status='approved'").bind(d.captain_id).first(); if((docs?.n||0)<6) return fail('لا يمكن تفعيل الكابتن قبل اعتماد المستندات الستة المطلوبة',409);}
+  if(d.status==='active'){const docs=await env.DB.prepare("SELECT COUNT(*) AS n FROM captain_documents WHERE captain_id=? AND review_status='approved'").bind(d.captain_id).first(); const photo=await env.DB.prepare("SELECT profile_photo_status FROM captain_profiles WHERE user_id=?").bind(d.captain_id).first(); if((docs?.n||0)<6||photo?.profile_photo_status!=='approved') return fail('لا يمكن تفعيل الكابتن قبل اعتماد المستندات الستة والصورة الشخصية',409);}
   await env.DB.batch([env.DB.prepare('UPDATE users SET status=?,updated_at=CURRENT_TIMESTAMP WHERE id=?').bind(d.status,d.captain_id),env.DB.prepare("UPDATE captain_profiles SET approved_at=CASE WHEN ?='active' THEN CURRENT_TIMESTAMP ELSE approved_at END,availability='offline' WHERE user_id=?").bind(d.status,d.captain_id),env.DB.prepare('INSERT INTO audit_log(id,admin_id,action,target_type,target_id,details_json) VALUES(?,?,?,?,?,?)').bind(id(),a.user.id,'captain.status','captain',d.captain_id,JSON.stringify({status:d.status}))]);
   return json({ok:true});
  }
