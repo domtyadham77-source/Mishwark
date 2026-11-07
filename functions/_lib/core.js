@@ -4,8 +4,8 @@ export const fail = (message, status = 400) => json({ ok: false, error: message 
 export async function body(request) { try { return await request.json(); } catch { return null; } }
 export function id() { return crypto.randomUUID(); }
 export function clean(v, max = 180) { return typeof v === 'string' ? v.trim().slice(0, max) : ''; }
-export function validEmail(v) { return /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(v); }
-export function validPhone(v) { return /^\\+?[0-9]{8,15}$/.test(v.replace(/[\\s()-]/g, '')); }
+export function validEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
+export function validPhone(v) { return /^\+?[0-9]{8,15}$/.test(v.replace(/[\s()-]/g, '')); }
 export async function sha256(value) { const b = await crypto.subtle.digest('SHA-256', enc.encode(value)); return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2,'0')).join(''); }
 const PASSWORD_HASH_ITERATIONS = 100000;
 export async function passwordHash(password, salt = crypto.getRandomValues(new Uint8Array(16)), iterations = PASSWORD_HASH_ITERATIONS) {
