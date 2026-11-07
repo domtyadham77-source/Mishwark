@@ -24,3 +24,13 @@
 .area-places{padding-top:10px;border-top:1px solid #41372f;color:#ffbd91;font-size:12px}.area-places>div{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}.area-places span{padding:6px 8px;border-radius:9px;background:#302b26;color:#ddd;font-size:11px}
 #quattroGateWrap{margin:10px 0}
 @media(max-width:760px){.ride-catalog-grid{grid-template-columns:1fr}.ride-route-fields{grid-template-columns:1fr}}
+
+.password-field{position:relative;display:block;width:100%;direction:ltr}
+.password-field>input{direction:rtl;text-align:right;padding-left:50px!important}
+.password-eye{position:absolute;left:8px;top:50%;transform:translateY(-50%);width:35px;height:35px;display:grid;place-items:center;padding:6px;border:1px solid #67442f;border-radius:11px;background:#2b211b;color:var(--orange);cursor:pointer}
+.password-eye svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.password-eye.shown{background:var(--orange);color:#17120f;border-color:var(--orange)}
+.vehicle-choice{display:flex;flex-direction:column;gap:9px;padding:14px;border:1px solid #67442f;border-radius:16px;background:linear-gradient(145deg,#302219,#1d1a18);color:#ffe0ca}
+.vehicle-type-select{appearance:none;width:100%;padding:13px 15px;border:1px solid #9a633d;border-radius:12px;background:#151311;color:#fff;font:inherit;outline:none}
+.vehicle-type-select:focus{border-color:var(--orange);box-shadow:0 0 0 3px #ff812e24}
+.vehicle-type-select option{background:#1b1b1b;color:#fff}
