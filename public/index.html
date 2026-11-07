@@ -38,10 +38,13 @@
       </div>
       <p id="mapsWelcome" class="notice" hidden>أهلاً بيك في مِشوارك! قبل ما تبدأ، نزّل خرائط المدينة الثلاثة عشان تتعرف على أماكن العمارات والشوارع.</p>
     </section>
+    <section id="captainRideBoard" class="auth" hidden><div class="auth-head"><span class="eyebrow">طلبات الرحلات</span><button id="captainAvailability" class="secondary" type="button">تفعيل استقبال الرحلات</button></div><p id="captainRideNotice" class="muted">فعّل حالة متاح لاستقبال الطلبات.</p><button id="refreshCaptainRides" class="ghost" type="button">تحديث الطلبات</button><div id="captainRideList"></div></section>
+    <section id="passengerOffers" class="auth" hidden><h3>عروض الكباتن</h3><button id="refreshPassengerOffers" class="ghost" type="button">تحديث العروض</button><div id="passengerOfferList"></div></section>
     <section id="captainSubscription" class="auth notice" hidden aria-live="polite"><h2>اشتراك الكابتن</h2><p id="subscriptionStatus"></p><p id="subscriptionEnds"></p><p id="subscriptionPrice"></p><div id="subscriptionPayment" class="notice"></div><h3>إشعارات حسابك</h3><div id="captainNotifications"></div><button type="button" id="captainInstall" class="secondary" hidden>تثبيت التطبيق</button><p class="muted">تثبيت التطبيق يساعدك تفتح حسابك بسرعة. تنبيهات المتصفح الفورية تحتاج تفعيل خدمة الإرسال على السيرفر.</p></section>
     <footer>© <span id="year"></span> مِشوارك · نسخة تجريبية للتطوير</footer>
   </main>
   <div id="offline" class="offline" hidden><div class="brand-mark">!</div><h2>الاتصال بالإنترنت ضعيف</h2><p>هنحاول نرجع الاتصال. مش هنأكد أي طلب إلا لما السيرفر يستلمه.</p><button class="primary" id="retryBtn">حاول تاني</button></div>
   <script src="/ride-map.js" defer></script>
+  <script src="/ride-flow.js" defer></script>
   <script src="/app.js" defer></script>
 </body></html>
