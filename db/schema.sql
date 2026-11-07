@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS users (
 
 CREATE TABLE IF NOT EXISTS captain_profiles (
   user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  vehicle_type TEXT NOT NULL DEFAULT 'car' CHECK(vehicle_type IN ('motorcycle','car')),
   wallet_provider TEXT CHECK(wallet_provider IN ('vodafone_cash','orange_cash') OR wallet_provider IS NULL),
   wallet_number TEXT,
   wallet_owner_name TEXT,
@@ -37,7 +38,7 @@ CREATE TABLE IF NOT EXISTS captain_profiles (
 CREATE TABLE IF NOT EXISTS captain_documents (
   id TEXT PRIMARY KEY,
   captain_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  document_type TEXT NOT NULL CHECK(document_type IN ('national_id','driving_license','vehicle_license')),
+  document_type TEXT NOT NULL CHECK(document_type IN ('national_id','driving_license','vehicle_license','vehicle_photo')),
   side TEXT NOT NULL CHECK(side IN ('front','back')),
   object_key TEXT,
   file_data BLOB,
