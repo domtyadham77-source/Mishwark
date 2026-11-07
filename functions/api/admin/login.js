@@ -17,9 +17,9 @@ export async function onRequestPost({ request, env }) {
     return fail('محاولات كثيرة. انتظر 15 دقيقة ثم حاول مرة أخرى.', 429);
   }
 
-  const configuredPassword = env.ADMIN_PANEL_PASSWORD;
+  const configuredPassword = env.ADMIN_PANEL_PASSWORD || env.ADMIN_PIN;
   if (typeof configuredPassword !== 'string' || configuredPassword.length < 16) {
-    return fail('كلمة مرور لوحة الإدارة غير مضبوطة في Cloudflare Secrets. يجب أن تكون 16 حرفًا على الأقل.', 503);
+    return fail('كلمة مرور لوحة الإدارة غير مضبوطة. أضف ADMIN_PANEL_PASSWORD أو ADMIN_PIN كـ Secret بطول 16 حرفًا على الأقل.', 503);
   }
 
   const data = await body(request);
