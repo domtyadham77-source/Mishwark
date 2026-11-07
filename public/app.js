@@ -51,3 +51,5 @@ function showCaptainMaps(user){
  $('mapsWelcome').hidden=seen;
  if(!seen){try{localStorage.setItem(key,'1');}catch{}}
 }
+
+document.addEventListener('click',e=>{const b=e.target.closest('[data-download-map]');if(b)window.downloadRideSectorMap?.(b.dataset.downloadMap);});
