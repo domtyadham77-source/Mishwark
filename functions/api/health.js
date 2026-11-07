@@ -16,9 +16,10 @@ export async function onRequestGet({ env }) {
     const missingColumns = [];
     for (const [table, columns] of Object.entries(requiredColumns)) {
       if (!names.has(table)) continue;
-      const info = await env.DB.prepare(`PRAGMA table_info(${table})`).all();
-      const present = new Set((info.results || []).map(column => column.name));
-      for (const column of columns) if (!present.has(column)) missingColumns.push(`${table}.${column}`);
+      for (const column of columns) {
+        try { await env.DB.prepare(`SELECT ${column} FROM ${table} LIMIT 0`).all(); }
+        catch { missingColumns.push(`${table}.${column}`); }
+      }
     }
     const schemaReady = missingTables.length === 0 && missingColumns.length === 0;
     checks.schema = schemaReady ? 'ok' : { status: 'incomplete', missing_tables: missingTables, missing_columns: missingColumns };
