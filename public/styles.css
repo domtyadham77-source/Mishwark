@@ -10,3 +10,16 @@
 @media(max-width:620px){.map-downloads{grid-template-columns:1fr}.map-download{flex-direction:row;align-items:center;justify-content:space-between;flex-wrap:wrap}}
 
 .passenger-ride .ride-map-viewport{max-height:560px;overflow:auto;background:#171a1d;border:1px solid #39434a;border-radius:18px;margin:14px 0;touch-action:pan-y}.passenger-ride #rideMapSvg{display:block;width:100%;height:auto;min-height:360px}.ride-select-row{display:flex;gap:10px;flex-wrap:wrap}.building-modal{margin:12px 0;padding:14px;border:1px solid #ff812e66;border-radius:16px;background:#24211e}.building-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(58px,1fr));gap:7px;margin:12px 0}.building-grid button{padding:10px 4px;background:#303b42;color:white;border:1px solid #65727a;border-radius:9px}.passenger-ride input[type=range]{accent-color:#ff812e}.passenger-ride label{display:block;margin:12px 0}
+
+/* Passenger destination catalogue */
+.ride-route-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:18px 0}
+.route-field{display:flex;flex-direction:column;gap:8px;padding:14px;border:1px solid #514033;border-radius:16px;background:linear-gradient(145deg,#29221d,#1b1b1b);color:#ffe0ca}
+.route-field>span,.route-field label{font-weight:800}
+.route-field select{width:100%;padding:13px;border-radius:11px;border:1px solid #55483f;background:#111;color:#fff;font:inherit}
+.ride-catalog-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:18px 0}
+.ride-area-card{min-width:0;padding:16px;border:1px solid #3e3934;border-radius:18px;background:linear-gradient(160deg,#242321,#191919);box-shadow:0 10px 25px #0003}
+.ride-area-card header{padding-bottom:10px;border-bottom:1px solid #41372f}.ride-area-card h3{margin:5px 0;color:#fff;font-size:18px}.area-kicker{font-size:11px;color:#ff9a52;font-weight:800}
+.area-building-groups{display:grid;gap:7px;margin:12px 0}.area-subgroup{display:flex;justify-content:space-between;gap:8px;padding:9px 10px;border-radius:10px;background:#302b26;color:#fff;font-size:12px}.area-subgroup span{color:#ffc69f;white-space:nowrap}
+.area-places{padding-top:10px;border-top:1px solid #41372f;color:#ffbd91;font-size:12px}.area-places>div{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}.area-places span{padding:6px 8px;border-radius:9px;background:#302b26;color:#ddd;font-size:11px}
+#quattroGateWrap{margin:10px 0}
+@media(max-width:760px){.ride-catalog-grid{grid-template-columns:1fr}.ride-route-fields{grid-template-columns:1fr}}
