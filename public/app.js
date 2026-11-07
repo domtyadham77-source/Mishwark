@@ -53,7 +53,7 @@ async function compressDocumentImage(file){
 
 function showCaptainMaps(user){
  const panel=$('captainMaps');if(!panel||!user||user.role!=='captain')return;
- panel.hidden=(window.__mishwarkScreen==='captainMaps');
+ panel.hidden=(window.__mishwarkScreen!=='captainMaps');
  const key='mishwark_city_maps_intro_'+String(user.id||user.phone||'captain');
  let seen=false;try{seen=localStorage.getItem(key)==='1';}catch{}
  $('mapsWelcome').hidden=seen;
@@ -202,6 +202,7 @@ $('profilePhoto').addEventListener('change',()=>{
 });
 $('profileForm').addEventListener('submit',async e=>{
  e.preventDefault();const fd=new FormData(e.currentTarget);const captain=mishwarkUser?.role==='captain';
+ const photoFile=fd.get('photo');if(photoFile instanceof File&&photoFile.size>0){try{const compact=await compressDocumentImage(photoFile);fd.set('photo',compact,compact.name);}catch(err){$('profileMessage').textContent=err.message;return;}}
  const oldType=$('profileVehicleType').value;
  $('profileSave').disabled=true;$('profileMessage').textContent='جاري حفظ التعديلات...';
  try{
