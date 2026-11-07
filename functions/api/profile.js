@@ -61,6 +61,7 @@ export async function onRequestPost({request,env}) {
     if (user.role === 'captain') {
       await env.DB.prepare('UPDATE captain_profiles SET vehicle_make=?,vehicle_model=?,vehicle_color=?,vehicle_plate=?,vehicle_year=?,profile_photo_data=COALESCE(?,profile_photo_data),profile_photo_mime=COALESCE(?,profile_photo_mime),profile_photo_status=CASE WHEN ? IS NULL THEN profile_photo_status ELSE \'pending\' END,availability=CASE WHEN ?=1 THEN \'offline\' ELSE availability END,approved_at=CASE WHEN ?=1 THEN NULL ELSE approved_at END WHERE user_id=?')
         .bind(captainProfile.make,captainProfile.model,captainProfile.color,captainProfile.plate,captainProfile.year,bytes,mime,bytes,vehicleChanged?1:0,vehicleChanged?1:0,user.id).run();
+      if (vehicleChanged) await env.DB.prepare("UPDATE captain_documents SET review_status='pending',uploaded_at=CURRENT_TIMESTAMP WHERE captain_id=? AND document_type IN ('vehicle_license','vehicle_photo')").bind(user.id).run();
       if (bytes || vehicleChanged) await env.DB.prepare("UPDATE users SET status='pending',updated_at=CURRENT_TIMESTAMP WHERE id=?").bind(user.id).run();
     }
     return json({ok:true,message:user.role==='captain'&&(bytes||vehicleChanged)?'تم حفظ البيانات. الحساب متوقف عن استقبال الرحلات مؤقتًا لحين مراجعة التعديلات من الإدارة.':'تم حفظ بيانات الملف الشخصي بنجاح.'});
