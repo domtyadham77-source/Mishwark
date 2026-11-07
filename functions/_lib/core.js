@@ -4,11 +4,28 @@ export const fail = (message, status = 400) => json({ ok: false, error: message 
 export async function body(request) { try { return await request.json(); } catch { return null; } }
 export function id() { return crypto.randomUUID(); }
 export function clean(v, max = 180) { return typeof v === 'string' ? v.trim().slice(0, max) : ''; }
-export function validEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
-export function validPhone(v) { return /^\+?[0-9]{8,15}$/.test(v.replace(/[\s()-]/g, '')); }
+export function validEmail(v) { return /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(v); }
+export function validPhone(v) { return /^\\+?[0-9]{8,15}$/.test(v.replace(/[\\s()-]/g, '')); }
 export async function sha256(value) { const b = await crypto.subtle.digest('SHA-256', enc.encode(value)); return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2,'0')).join(''); }
-export async function passwordHash(password, salt = crypto.getRandomValues(new Uint8Array(16))) { const key = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveBits']); const bits = await crypto.subtle.deriveBits({ name:'PBKDF2', salt, iterations:210000, hash:'SHA-256' }, key, 256); const b64 = btoa(String.fromCharCode(...new Uint8Array(bits))); const s64 = btoa(String.fromCharCode(...salt)); return `pbkdf2$210000$${s64}$${b64}`; }
-export async function verifyPassword(password, stored) { try { const [kind, rounds, salt64, expected] = stored.split('$'); if (kind !== 'pbkdf2' || Number(rounds) !== 210000) return false; const salt = Uint8Array.from(atob(salt64), c => c.charCodeAt(0)); const actual = await passwordHash(password, salt); return constantTime(actual.split('$')[3], expected); } catch { return false; } }
+const PASSWORD_HASH_ITERATIONS = 100000;
+export async function passwordHash(password, salt = crypto.getRandomValues(new Uint8Array(16)), iterations = PASSWORD_HASH_ITERATIONS) {
+ if (!Number.isInteger(iterations) || iterations < 1 || iterations > PASSWORD_HASH_ITERATIONS) throw new Error('Unsupported PBKDF2 iteration count');
+ const key = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveBits']);
+ const bits = await crypto.subtle.deriveBits({ name:'PBKDF2', salt, iterations, hash:'SHA-256' }, key, 256);
+ const b64 = btoa(String.fromCharCode(...new Uint8Array(bits)));
+ const s64 = btoa(String.fromCharCode(...salt));
+ return `pbkdf2$${iterations}$${s64}$${b64}`;
+}
+export async function verifyPassword(password, stored) {
+ try {
+  const [kind, rounds, salt64, expected] = stored.split('$');
+  const iterations = Number(rounds);
+  if (kind !== 'pbkdf2' || !Number.isInteger(iterations) || iterations < 1 || iterations > PASSWORD_HASH_ITERATIONS) return false;
+  const salt = Uint8Array.from(atob(salt64), c => c.charCodeAt(0));
+  const actual = await passwordHash(password, salt, iterations);
+  return constantTime(actual.split('$')[3], expected);
+ } catch { return false; }
+}
 function constantTime(a,b) { if (typeof a !== 'string' || typeof b !== 'string' || a.length !== b.length) return false; let n=0; for(let i=0;i<a.length;i++) n |= a.charCodeAt(i)^b.charCodeAt(i); return n===0; }
 export function cookie(name, value, maxAge) { return `${name}=${value}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${maxAge}`; }
 export function getCookie(request, name) { const raw=request.headers.get('Cookie')||''; const item=raw.split(';').map(x=>x.trim()).find(x=>x.startsWith(name+'=')); return item ? item.slice(name.length+1) : null; }
