@@ -14,7 +14,7 @@
 
 ## الخدمات والـ Bindings المطلوبة
 1. **D1** binding اسمه `DB` وقاعدة بيانات جديدة باسم `mishwark-db`.
-2. لا يوجد R2 أو KV أو Durable Object مطلوب. تُحفظ صور مستندات الكباتن المضغوطة داخل D1 كبيانات خاصة لا يمكن الوصول إليها إلا من API محمي بجلسة الأدمن. حجم الصورة الواحدة لا يتجاوز 1.8 ميجابايت، مع مراعاة حدود D1 المجانية (500 ميجابايت لكل قاعدة، و2 ميجابايت كحد أقصى للصف).
+2. لا يوجد R2 أو KV أو Durable Object مطلوب. تُحفظ صور مستندات الكباتن المضغوطة داخل D1 كبيانات خاصة لا يمكن الوصول إليها إلا من API محمي بجلسة الأدمن. لا نحتاج R2 أو خدمة مدفوعة في المرحلة الحالية. حجم الصورة الواحدة لا يتجاوز 1.8 ميجابايت، مع مراعاة حدود D1 المجانية (500 ميجابايت لكل قاعدة، و2 ميجابايت كحد أقصى للصف).
 
 بعد إنشاء D1 انسخ `database_id` الحقيقي إلى `wrangler.toml` مكان `PASTE_YOUR_NEW_D1_DATABASE_ID`. اربط D1 في Cloudflare Pages > Settings > Functions > Bindings لبيئة Production، وكرر الربط لبيئة Preview عند الحاجة.
 
@@ -52,7 +52,7 @@ npx wrangler d1 execute mishwark-db --remote --file=./db/migrations/0002_captain
 2. نفّذ `db/schema.sql`.
 3. أضف المتغيرات والأسرار.
 4. انشر Pages من GitHub مع Root directory فارغ، Build output directory = `public`. لا تحتاج bundler build لهذه الملفات؛ يمكن استخدام `npm run check` كفحص قبل النشر.
-5. افتح `/api/health` وتأكد من `database: ok`. ستظهر حالة `private_storage: not_configured` إلى أن نضيف تخزينًا خاصًا للوثائق.
+5. افتح `/api/health` وتأكد من `database: ok`. ستظهر حالة `private_storage: d1-private` عند نجاح اتصال D1؛ الصور محفوظة كبيانات خاصة وتُعرض عبر endpoint محمي بجلسة الأدمن فقط.
 6. أنشئ الأدمن مرة واحدة بطلب `POST /api/admin/bootstrap` مع Header اسمه `X-Admin-Bootstrap` وقيمة `ADMIN_BOOTSTRAP_TOKEN`، وJSON يحتوي `full_name`, `email`, `phone`, `password` (14 حرفًا على الأقل). بعد نجاح الإنشاء احذف السر فورًا.
 7. افتح `/admin/` لتسجيل دخول الأدمن.
 
