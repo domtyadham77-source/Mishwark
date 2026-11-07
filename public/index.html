@@ -20,10 +20,16 @@
     <section id="passengerRide" class="auth passenger-ride" hidden>
       <div class="auth-head"><span class="eyebrow">اطلب مشوارك</span><span class="muted">الاختيار للراكب</span></div>
       <h2>رايح فين؟</h2><p>ابحث برقم العمارة أو اختار القطاع من الخريطة، وحدد نقطة الركوب والوجهة.</p>
-      <form id="rideRequestForm"><label>ابحث برقم العمارة<input id="rideMapSearch" inputmode="numeric" placeholder="مثال: 751"></label>
-      <div class="ride-select-row"><button type="button" class="secondary" id="pickPickup">اختيار نقطة الركوب</button><button type="button" class="secondary" id="pickDestination">اختيار الوجهة</button></div>
+      <form id="rideRequestForm">
+      <div class="ride-route-fields">
+        <label class="route-field"><span>عايز تروح فين؟</span><select id="rideDestination" required><option value="">اختار الوجهة</option></select></label>
+        <label class="route-field"><span>عايز تمشي منين؟</span><select id="ridePickup" required><option value="">اختار نقطة الركوب</option></select></label>
+      </div>
+      <div id="quattroGateWrap" class="route-field" hidden><label for="quattroGate">اختار بوابة كواترو مول</label><select id="quattroGate"><option value="">اختار البوابة</option><option value="1">بوابة 1</option><option value="2">بوابة 2</option><option value="3">بوابة 3</option><option value="4">بوابة 4</option></select></div>
+      <div id="rideCatalogCards" class="ride-catalog-grid"></div>
       <p id="pickupLabel" class="notice">لم يتم اختيار نقطة الركوب</p><p id="destinationLabel" class="notice">لم يتم اختيار الوجهة</p>
-      <p class="muted">الخريطة تحدد البلوك الذي تقع فيه العمارة، وترسم أقصر خط مستقيم بين مركزي البلوكين. لا تتوفر حاليًا إحداثيات مدخل كل عمارة، والخط لا يمثل مسار الشوارع.</p><div class="ride-map-viewport"><svg id="rideMapSvg" viewBox="0 0 664 1620" role="img" aria-label="خريطة قطاعات المدينة التفاعلية"></svg></div><div id="buildingChoices" class="building-modal" hidden></div>
+      <p class="muted">الخط المرسوم توضيحي بين موضعي البلوكين على الخريطة الحالية، وليس مسار شوارع أو قياسًا دقيقًا بالمتر. يلزم تحديد إحداثيات كل عمارة لتحديد أقصر مسافة فعلية بينها.</p>
+      <div class="ride-map-viewport"><svg id="rideMapSvg" viewBox="0 0 664 1620" role="img" aria-label="خريطة قطاعات المدينة التفاعلية"></svg></div><div id="buildingChoices" class="building-modal" hidden></div>
       <label>السعر المبدئي: <b id="ridePriceValue">25 جنيه</b><input id="ridePrice" type="range" min="25" max="50" step="1" value="25"></label>
       <label>طريقة الدفع<select id="ridePayment"><option value="cash">كاش</option><option value="vodafone_cash">فودافون كاش</option><option value="orange_cash">أورنج كاش</option><option value="instapay">إنستا باي</option></select></label>
       <button class="primary" id="rideSubmit" type="submit" disabled>إرسال طلب الرحلة</button><p id="rideRequestMessage" role="status"></p></form></section>
@@ -45,6 +51,7 @@
   </main>
   <div id="offline" class="offline" hidden><div class="brand-mark">!</div><h2>الاتصال بالإنترنت ضعيف</h2><p>هنحاول نرجع الاتصال. مش هنأكد أي طلب إلا لما السيرفر يستلمه.</p><button class="primary" id="retryBtn">حاول تاني</button></div>
   <script src="/ride-map.js" defer></script>
+  <script src="/ride-catalog.js" defer></script>
   <script src="/ride-flow.js" defer></script>
   <script src="/app.js" defer></script>
 </body></html>
