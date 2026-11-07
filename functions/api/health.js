@@ -8,10 +8,15 @@ export async function onRequestGet({ env }) {
     const found = await env.DB.prepare(`SELECT name FROM sqlite_master WHERE type='table' AND name IN (${requiredTables.map(() => '?').join(',')})`).bind(...requiredTables).all();
     const names = new Set((found.results || []).map(row => row.name));
     const missingTables = requiredTables.filter(name => !names.has(name));
+    // Check the columns used by authentication and registration, not just a few
+    // optional profile fields. A successful SELECT 1 alone does not prove this schema.
     const requiredColumns = {
-      users: ['deleted_at'],
-      captain_profiles: ['vehicle_type','profile_photo_data','profile_photo_mime','profile_photo_status'],
-      captain_documents: ['file_data','mime_type','file_size']
+      users: ['id','full_name','email','phone','password_hash','role','status','deleted_at'],
+      rate_limits: ['rate_key','hits','window_start'],
+      sessions: ['id','user_id','token_hash','expires_at'],
+      app_settings: ['setting_key','setting_value'],
+      captain_profiles: ['user_id','vehicle_type','profile_photo_data','profile_photo_mime','profile_photo_status'],
+      captain_documents: ['id','captain_id','document_type','side','file_data','mime_type','file_size','review_status']
     };
     const missingColumns = [];
     for (const [table, columns] of Object.entries(requiredColumns)) {
