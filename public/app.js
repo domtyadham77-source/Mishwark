@@ -13,7 +13,8 @@ window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredIns
 $('installBtn').addEventListener('click',async()=>{if(!deferredInstallPrompt)return;await deferredInstallPrompt.prompt();deferredInstallPrompt=null;$('installBtn').hidden=true;});
 if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('/sw.js').catch(()=>{}); showOnlineState();
 
-$('documentForm').addEventListener('submit',async e=>{e.preventDefault();const f=new FormData(e.currentTarget);$('documentMessage').textContent='جاري ضغط الصورة وإرسالها...';try{const original=f.get('file');const compressed=await compressDocumentImage(original);f.set('file',compressed,compressed.name);const r=await fetch('/api/captain/documents',{method:'POST',body:f});const d=await r.json();$('documentMessage').textContent=d.message||d.error||'تعذر رفع الملف';if(r.ok)e.currentTarget.reset();}catch{$('documentMessage').textContent='تعذر الاتصال. لم يتم تأكيد الرفع.';}});
+$('documentType').addEventListener('change',()=>{const back=$('documentSide').querySelector('option[value="back"]');const profile=$('documentType').value==='profile_photo';back.hidden=profile;if(profile)$('documentSide').value='front';});
+$('documentForm').addEventListener('submit',async e=>{e.preventDefault();const f=new FormData(e.currentTarget);$('documentMessage').textContent='جاري ضغط الصورة وإرسالها...';try{const original=f.get('file');const compressed=await compressDocumentImage(original);f.set('file',compressed,compressed.name);const r=await fetch('/api/captain/documents',{method:'POST',body:f});const d=await r.json();$('documentMessage').textContent=d.message||d.error||'تعذر رفع الملف';if(r.ok)e.currentTarget.reset();}catch(err){$('documentMessage').textContent=err.message||'تعذر ضغط الصورة أو رفعها. حاول مرة أخرى.';}});
 
 async function loadCaptainSubscription(){
  const panel=$('captainSubscription'); if(!panel)return;
