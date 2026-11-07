@@ -29,12 +29,12 @@
       <button class="primary" id="rideSubmit" type="submit" disabled>إرسال طلب الرحلة</button><p id="rideRequestMessage" role="status"></p></form></section>
     <section id="captainMaps" class="auth captain-maps" hidden aria-live="polite">
       <div class="auth-head"><span class="eyebrow">دليل المدينة</span><span class="muted">للكباتن</span></div>
-      <h2>حمّل خرائط المدينة</h2>
-      <p>نزّل الخرائط الثلاثة واحتفظ بها على موبايلك. هتقدر ترجع تحمّلها من هنا في أي وقت.</p>
+      <h2>حمّل أدلة قطاعات المدينة</h2>
+      <p>نزّل دليل كل قطاع بصيغة SVG واحتفظ به على موبايلك. الأدلة مولّدة من تقسيمات البلوكات وأرقام العمارات داخل التطبيق.</p>
       <div class="map-downloads">
-        <a class="map-download" href="/maps/A.jpg" download="Mishwark-City-Map-A.jpg"><b>خريطة A</b><span>القطاع الأول</span><strong>تنزيل الخريطة ↓</strong></a>
-        <a class="map-download" href="/maps/B.jpg" download="Mishwark-City-Map-B.jpg"><b>خريطة B</b><span>القطاع الثاني</span><strong>تنزيل الخريطة ↓</strong></a>
-        <a class="map-download" href="/maps/C.jpg" download="Mishwark-City-Map-C.jpg"><b>خريطة C</b><span>القطاع الثالث</span><strong>تنزيل الخريطة ↓</strong></a>
+        <button class="map-download" type="button" data-download-map="A"><b>خريطة A</b><span>القطاع الأول</span><strong>تنزيل الدليل ↓</strong></button>
+        <button class="map-download" type="button" data-download-map="B"><b>خريطة B</b><span>القطاع الثاني</span><strong>تنزيل الدليل ↓</strong></button>
+        <button class="map-download" type="button" data-download-map="C"><b>خريطة C</b><span>القطاع الثالث</span><strong>تنزيل الدليل ↓</strong></button>
       </div>
       <p id="mapsWelcome" class="notice" hidden>أهلاً بيك في مِشوارك! قبل ما تبدأ، نزّل خرائط المدينة الثلاثة عشان تتعرف على أماكن العمارات والشوارع.</p>
     </section>
