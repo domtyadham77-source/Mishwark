@@ -34,6 +34,7 @@ jobs:
           if 'vehicle_type' not in columns:
               raise SystemExit('Missing captain_profiles.vehicle_type')
           print('D1 schema OK')
+          PY
       - name: Validate captain vehicle migration
         run: |
           python3 - <<'PY'
@@ -60,5 +61,4 @@ jobs:
           db.execute("INSERT INTO captain_documents(id,captain_id,document_type,side) VALUES('vehicle-photo','captain-1','vehicle_photo','front')")
           assert db.execute("SELECT COUNT(*) FROM captain_documents").fetchone()[0] == 2
           print('Captain vehicle migration OK')
-          PY
           PY
