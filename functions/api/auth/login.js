@@ -8,6 +8,6 @@ export async function onRequestPost({request,env}) {
  await clearRateLimit(request,env,'login');
  if(user.status!=='active' && !(user.role==='captain'&&user.status==='pending')) return fail('الحساب غير متاح حالياً',403);
  const token=crypto.randomUUID()+crypto.randomUUID(), hash=await sha256(token), sid=id();
- await env.DB.prepare('INSERT INTO sessions(id, user_id, token_hash, expires_at) VALUES(?,?,?,datetime(\'now\',\'+14 days\'))').bind(sid,user.id,hash).run();
+ await env.DB.prepare('INSERT INTO sessions(id, user_id, token_hash, expires_at) VALUES(?,?,?,datetime(\'now\',\'+365 days\'))').bind(sid,user.id,hash).run();
  return json({ok:true,user:{id:user.id,full_name:user.full_name,email:user.email,phone:user.phone,role:user.role,status:user.status,vehicle_type:user.vehicle_type}},200,{'set-cookie':cookie('ride_session',token,31536000)});
 }
