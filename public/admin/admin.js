@@ -29,3 +29,24 @@ $('routeForm').addEventListener('submit',async e=>{e.preventDefault();const f=ne
 $('offerForm').addEventListener('submit',async e=>{e.preventDefault();const f=new FormData(e.currentTarget);try{await api('/api/admin/subscriptions',{method:'POST',body:JSON.stringify({action:'create_offer',title:f.get('title'),trial_months:f.get('trial_months'),active:f.has('active')})});e.currentTarget.reset();await load();}catch(e){msg(e.message);}});
 $('pricing').addEventListener('submit',async e=>{e.preventDefault();const f=new FormData(e.currentTarget);try{await api('/api/admin/settings',{method:'POST',body:JSON.stringify({negotiation_min_piasters:Number(f.get('min'))*100,negotiation_max_piasters:Number(f.get('max'))*100})});msg('تم حفظ الأسعار');}catch(e){msg(e.message);}});
 api('/api/auth/me').then(x=>{if(x.user?.role==='admin')load();}).catch(()=>{});
+\n
+async function loadUsers(){
+ const q=$('userSearch').value.trim();
+ const d=await api('/api/admin/users?q='+encodeURIComponent(q));
+ $('usersList').innerHTML=(d.users||[]).map(u=>`<article class="admin-item"><b>${esc(u.full_name)}</b><p>${esc(u.phone)} · ${esc(u.email)}</p><p>النوع: ${u.role==='captain'?'كابتن':'راكب'} · الحالة: ${esc(u.status)} · التسجيل: ${esc(u.created_at||'—')}</p><button class="secondary" data-reset-user="${esc(u.id)}">إنشاء كلمة مرور مؤقتة</button></article>`).join('')||'لا توجد نتائج';
+ $('resetResult').classList.add('hide');
+}
+$('searchUsers')?.addEventListener('click',()=>loadUsers().catch(e=>msg(e.message)));
+$('userSearch')?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();loadUsers().catch(x=>msg(x.message));}});
+document.addEventListener('click',async e=>{
+ const b=e.target.closest('[data-reset-user]'); if(!b)return;
+ if(!confirm('سيتم تغيير كلمة المرور الحالية وإلغاء كل جلسات المستخدم. هل تريد المتابعة؟'))return;
+ try{
+  const d=await api('/api/admin/users',{method:'POST',body:JSON.stringify({user_id:b.dataset.resetUser})});
+  $('resetResult').classList.remove('hide');
+  $('resetResult').innerHTML='<b>كلمة المرور المؤقتة (تظهر مرة واحدة):</b><p style="font-size:20px;direction:ltr;user-select:all">'+esc(d.temporary_password)+'</p><p class="muted">انسخها وسلّمها لصاحب الحساب عبر قناة خاصة وآمنة. لن نعرضها مرة أخرى.</p><button type="button" class="secondary" id="copyTempPassword">نسخ كلمة المرور</button>';
+  $('copyTempPassword').onclick=()=>navigator.clipboard?.writeText(d.temporary_password);
+  await loadUsers();
+ }catch(err){msg(err.message);}
+});
+\n
