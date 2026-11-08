@@ -12,6 +12,7 @@ async function load(){try{
  const pset=Object.fromEntries((pricing.settings||[]).map(x=>[x.setting_key,x.setting_value]));$('pricing').elements.min.value=Number(pset.negotiation_min_piasters||2500)/100;$('pricing').elements.max.value=Number(pset.negotiation_max_piasters||5000)/100;const v=sub.settings||{};const f=$('subscriptionSettings');f.elements.monthly_fee_egp.value=Number(v.captain_monthly_fee_piasters||10000)/100;f.elements.trial_enabled.checked=v.captain_trial_enabled==='1';f.elements.trial_months.value=v.captain_trial_months||3;f.elements.wallet_number.value=v.captain_subscription_wallet_number||'';f.elements.wallet_provider.value=v.captain_subscription_wallet_provider||'';f.elements.instapay.value=v.captain_subscription_instapay||'';f.elements.payment_note.value=v.captain_subscription_payment_note||'';
  $('routes').innerHTML=(routes.routes||[]).map(x=>`<article class="admin-item"><b>${esc(x.route_name)}</b><p>${egp(x.price_piasters)} · ${x.active?'مفعل':'متوقف'} · الترتيب ${x.sort_order}</p><div class="admin-actions"><button class="secondary" data-route-edit="${esc(x.id)}" data-name="${esc(x.route_name)}" data-price="${Number(x.price_piasters)}" data-order="${Number(x.sort_order)}">تعديل</button><button class="secondary" data-route-toggle="${esc(x.id)}" data-active="${x.active?0:1}">${x.active?'إيقاف':'تفعيل'}</button><button class="ghost" data-route-delete="${esc(x.id)}">حذف</button></div></article>`).join('')||'لا توجد مسارات ثابتة';
  $('offers').innerHTML=(sub.offers||[]).map(o=>`<div class="admin-item"><b>${esc(o.title)}</b><p>${o.trial_months} شهر · ${o.active?'مفعل':'متوقف'}</p><button class="secondary" data-offer="${esc(o.id)}" data-active="${o.active?0:1}">${o.active?'إيقاف العرض':'تفعيل العرض'}</button></div>`).join('')||'لا توجد عروض';
+ await loadUsers();
  }catch(e){msg(e.message);}}
 $('login').addEventListener('submit',async e=>{e.preventDefault();const f=new FormData(e.currentTarget);try{await api('/api/admin/login',{method:'POST',body:JSON.stringify({password:f.get('password')})});await load();}catch(e){msg(e.message);}});
 $('seedRoutes')?.addEventListener('click',async()=>{if(!confirm('فصل المشاوير الثلاثة إلى بطاقات مستقلة؟ السعر لكل مشوار 70 جنيه.'))return;try{const d=await api('/api/admin/routes',{method:'POST',body:JSON.stringify({action:'split_defaults'})});msg(d.message||('تمت الإضافة: '+d.created));await load();}catch(e){msg(e.message);}});
@@ -46,7 +47,6 @@ document.addEventListener('click',async e=>{
   $('resetResult').classList.remove('hide');
   $('resetResult').innerHTML='<b>كلمة المرور المؤقتة (تظهر مرة واحدة):</b><p style="font-size:20px;direction:ltr;user-select:all">'+esc(d.temporary_password)+'</p><p class="muted">انسخها وسلّمها لصاحب الحساب عبر قناة خاصة وآمنة. لن نعرضها مرة أخرى.</p><button type="button" class="secondary" id="copyTempPassword">نسخ كلمة المرور</button>';
   $('copyTempPassword').onclick=()=>navigator.clipboard?.writeText(d.temporary_password);
-  await loadUsers();
  }catch(err){msg(err.message);}
 });
 \n
