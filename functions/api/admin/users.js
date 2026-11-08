@@ -10,7 +10,7 @@ export async function onRequestGet({request,env}) {
  const a=await requireUser(request,env,'admin'); if(a.error) return a.error;
  const url=new URL(request.url), q=(url.searchParams.get('q')||'').trim().slice(0,100);
  const like='%'+q+'%';
- const rows=await env.DB.prepare(`SELECT id,full_name,email,phone,role,status,created_at FROM users WHERE deleted_at IS NULL AND role IN ('passenger','captain') AND (?='' OR full_name LIKE ? OR email LIKE ? ESCAPE '\\\\' OR phone LIKE ? ESCAPE '\\\\') ORDER BY created_at DESC LIMIT 100`).bind(q,like,like,like).all();
+ const rows=await env.DB.prepare(`SELECT id,full_name,email,phone,role,status,created_at FROM users WHERE deleted_at IS NULL AND role IN ('passenger','captain') AND (?='' OR full_name LIKE ? OR email LIKE ? OR phone LIKE ?) ORDER BY created_at DESC LIMIT 100`).bind(q,like,like,like).all();
  return json({ok:true,users:rows.results||[]});
 }
 
