@@ -124,3 +124,43 @@ button:disabled{opacity:.52;filter:saturate(.5);transform:none;cursor:not-allowe
 @keyframes drawerEnter{from{opacity:.7;transform:translateX(16px)}to{opacity:1;transform:translateX(0)}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;}}
 @supports not ((backdrop-filter:blur(2px)) or (-webkit-backdrop-filter:blur(2px))){.secondary,.ghost,.tab,.menu-btn,.drawer-item,.bottom-nav,.drawer-panel{background-color:#24201d}}
+
+
+/* Passenger-first map + booking sheet */
+.passenger-ride{padding:0!important;margin:8px 0 24px!important;overflow:visible}
+.passenger-map-head{display:flex;align-items:end;justify-content:space-between;gap:12px;margin:4px 2px 10px}
+.passenger-map-head h2{font-size:19px;margin:5px 0 0}
+.map-hint{font-size:11px;color:var(--muted)}
+.passenger-ride .ride-map-viewport{height:clamp(280px,48vh,470px);max-height:none;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;scrollbar-color:#ff812e55 transparent;border:1px solid #ffffff20;border-radius:22px;background:linear-gradient(145deg,#21182f,#111018);box-shadow:inset 0 1px 0 #ffffff12,0 14px 34px #0005;touch-action:pan-x pan-y}
+.passenger-ride #rideMapSvg{display:block;width:2050px;height:540px;min-height:0;max-width:none}
+.passenger-booking-panel{position:relative;margin:18px -2px 0;padding:20px 18px 24px;border:1px solid #ffffff20;border-radius:28px 28px 18px 18px;background:linear-gradient(155deg,rgba(48,29,79,.97),rgba(20,12,36,.98) 70%);box-shadow:0 -12px 40px #0005,inset 0 1px 0 #ffffff20}
+.booking-handle{width:76px;height:7px;border-radius:20px;background:#ffffff45;margin:-9px auto 20px}
+.booking-heading{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.booking-heading h2{font-size:25px;margin:5px 0}
+.booking-pin{width:44px;height:44px;border-radius:16px;display:grid;place-items:center;background:#ff812e22;color:#ffad72;font-size:29px}
+.destination-search{display:flex;align-items:center;gap:12px;padding:0 16px;height:68px;border-radius:18px;border:1px solid #8a69b7;background:#110b20;box-shadow:0 0 0 3px #ffffff08,inset 0 1px 0 #ffffff10;margin-bottom:18px}
+.destination-search>span{font-size:30px;color:#ffad72;line-height:1}
+.destination-search input{width:100%;min-width:0;border:0;outline:0;background:transparent;color:#fff;font:inherit;font-size:19px;font-weight:800}
+.destination-search input::placeholder{color:#b9a8d1;opacity:1}
+.ride-route-fields{margin:0 0 12px;grid-template-columns:1fr}
+.route-field{background:rgba(12,8,24,.65);border-color:#ffffff20;color:#f7efff}
+.route-field select{background:#110b20;border-color:#ffffff25}
+.route-destination-hidden{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+.passenger-ride .notice{background:#100b1e;border:1px solid #ffffff14;color:#cdbfe2}
+.fixed-routes-section,.ride-request-options{margin-top:22px}
+.section-title{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:12px}
+.section-title h3{margin:0;font-size:18px}
+.section-title span{font-size:11px;color:#b9a8d1}
+.fixed-routes-list{display:grid;grid-template-columns:1fr;gap:10px}
+.fixed-route-card{display:flex;align-items:center;justify-content:space-between;gap:14px;width:100%;min-height:62px;padding:15px 16px;border:1px solid #ffffff1b;border-radius:17px;background:linear-gradient(120deg,#241536,#130d21);color:#fff;text-align:right;box-shadow:inset 0 1px 0 #ffffff0d;transition:border-color .18s,transform .18s,background .18s}
+.fixed-route-card span{font-weight:800;line-height:1.6}
+.fixed-route-card b{white-space:nowrap;color:#ffb27c;font-size:15px}
+.fixed-route-card.selected{border-color:#ff812e;background:linear-gradient(120deg,#4b2358,#241536);box-shadow:0 0 0 2px #ff812e22}
+.ride-request-options{padding:16px;border-radius:18px;border:1px solid #ffffff18;background:#100b1d}
+.ride-request-options label{display:grid;gap:10px;color:#e9def5}
+.ride-request-options input[type=range]{width:100%;accent-color:#ff812e}
+.ride-request-options select{width:100%;padding:13px;border-radius:13px;border:1px solid #ffffff25;background:#100b1d;color:white;font:inherit}
+.ride-submit{width:100%;min-height:62px;margin-top:18px;border-radius:18px;font-size:20px;font-weight:900;background:linear-gradient(110deg,#ff812e,#db4f9d);box-shadow:0 10px 30px #e65b8d30}
+#rideRequestMessage{color:#f1d6ff}
+@media(min-width:760px){.passenger-booking-panel{max-width:900px;margin-inline:auto}.passenger-ride .ride-map-viewport{height:430px}}
+@media(max-width:520px){.passenger-ride{margin-inline:-2px!important}.passenger-booking-panel{padding:18px 14px 22px;border-radius:25px 25px 16px 16px}.booking-heading h2{font-size:22px}.destination-search{height:62px}.destination-search input{font-size:17px}.passenger-map-head h2{font-size:17px}.map-hint{max-width:120px;text-align:left}}
