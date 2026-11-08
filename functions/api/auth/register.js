@@ -1,4 +1,4 @@
-import { json, fail, body, id, clean, validEmail, validPhone, passwordHash, requireOrigin, rateLimit, addCalendarMonths } from '../../_lib/core.js';
+import { json, fail, body, id, clean, validEmail, validPhone, passwordHash, requireOrigin, rateLimit, addCalendarMonths, sha256, cookie } from '../../_lib/core.js';
 
 async function recordRegistrationFailure(env, role, stage, error) {
   const message = String(error?.message || 'unknown error').slice(0, 500);
@@ -70,7 +70,16 @@ export async function onRequestPost({ request, env }) {
         ? `مبروك! عندك ${sub.trial_months||3} شهور مجانية من تاريخ تسجيلك، حتى ${String(sub.trial_ends_at).slice(0,10)}. ثبّت التطبيق لمتابعة مدة العرض وبيانات التجديد. حسابك سيبدأ استقبال الرحلات بعد اعتماد الإدارة.`
         : 'تم إنشاء حسابك. العرض المجاني غير متاح حاليًا؛ يمكنك متابعة الاشتراك بعد تسجيل الدخول. حسابك في انتظار مراجعة الإدارة.';
     }
-    return json({ ok:true, message },201);
+    const headers = {};
+    if (role === 'passenger') {
+      const token = crypto.randomUUID() + crypto.randomUUID();
+      const tokenHash = await sha256(token);
+      await env.DB.prepare("INSERT INTO sessions(id,user_id,token_hash,expires_at) VALUES(?,?,?,datetime('now','+365 days'))")
+        .bind(id(), uid, tokenHash).run();
+      headers['set-cookie'] = cookie('ride_session', token, 31536000);
+      message = 'تم إنشاء حسابك وتسجيل دخولك بنجاح. أهلاً بيك في مِشوارك!';
+    }
+    return json({ ok:true, message },201,headers);
   } catch (error) {
     if (uid) await env.DB.prepare('DELETE FROM users WHERE id=?').bind(uid).run().catch(() => {});
     const message = String(error?.message || 'unknown error');
