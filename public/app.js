@@ -174,6 +174,24 @@ document.addEventListener('submit',async e=>{
 /* Move captain document upload into the dedicated profile screen. */
 const captainUploadPanel=$('captainUpload');
 if(captainUploadPanel){captainUploadPanel.hidden=false;$('profileDocuments').appendChild(captainUploadPanel);$('profileDocuments').hidden=true;}
+
+function decodePushKey(value){const padded=value.replace(/-/g,'+').replace(/_/g,'/');return Uint8Array.from(atob(padded+'='.repeat((4-padded.length%4)%4)),x=>x.charCodeAt(0));}
+$('enablePushBtn')?.addEventListener('click',async()=>{
+ const button=$('enablePushBtn'),status=$('pushMessage');button.disabled=true;status.textContent='جاري تفعيل الإشعارات...';
+ try{
+  if(!('serviceWorker'in navigator)||!('PushManager'in window)||!('Notification'in window))throw Error('المتصفح لا يدعم إشعارات التطبيق. جرّب تثبيت التطبيق أو تحديث المتصفح.');
+  const cfg=await fetch('/api/push/config',{cache:'no-store'}).then(r=>r.json());
+  if(!cfg.public_key)throw Error('خدمة الإشعارات لم يتم إعداد مفاتيحها على السيرفر بعد.');
+  const permission=await Notification.requestPermission();if(permission!=='granted')throw Error('لم تسمح بإرسال الإشعارات. يمكنك تفعيلها من إعدادات المتصفح.');
+  const registration=await navigator.serviceWorker.ready;
+  let subscription=await registration.pushManager.getSubscription();
+  if(!subscription)subscription=await registration.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:decodePushKey(cfg.public_key)});
+  const saved=await fetch('/api/push/subscribe',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({subscription:subscription.toJSON()})});
+  const result=await saved.json();if(!saved.ok)throw Error(result.error||'تعذر حفظ إعداد الإشعارات.');
+  status.textContent=cfg.enabled?'تم تفعيل إشعارات الرحلات على هذا الجهاز.':'تم حفظ اشتراك الإشعارات، وباقي إعداد مفاتيح الإرسال على السيرفر لتصل التنبيهات في الخلفية.';
+ }catch(error){status.textContent=error.message||'تعذر تفعيل الإشعارات.';}
+ finally{button.disabled=false;}
+});
 async function loadProfile(){
  $('profileMessage').textContent='جاري تحميل بياناتك...';
  try{
