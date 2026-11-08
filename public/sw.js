@@ -1,4 +1,4 @@
-const CACHE = 'mishwark-shell-v3';
+const CACHE = 'mishwark-shell-v4';
 const SHELL = ['/', '/styles.css', '/app.js','/ride-map.js','/ride-catalog.js','/ride-flow.js','/manifest.webmanifest','/offline.html','/assets/icon.svg'];
 self.addEventListener('install', event => event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(SHELL)).then(() => self.skipWaiting())));
 self.addEventListener('activate', event => event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key.startsWith('mishwark-shell-') && key !== CACHE).map(key => caches.delete(key)))).then(() => self.clients.claim())));
