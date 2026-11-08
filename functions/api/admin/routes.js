@@ -18,18 +18,30 @@ export async function onRequestPost({ request, env }) {
   if (!data || typeof data !== 'object') return fail('بيانات الطلب غير صحيحة');
 
   const action = data.action || 'create';
-  if (action === 'seed_defaults') {
-    const count = await env.DB.prepare('SELECT COUNT(*) AS n FROM fixed_routes').first();
-    if ((count?.n || 0) > 0) return fail('يوجد بالفعل مشاوير محفوظة. أضف الناقص يدويًا حتى لا تتكرر البيانات.', 409);
-    const defaults = [
-      ['مشوار المطار — شامل الكارتة',35000],['مشوار مدرسة غريباني',6000],['مشوار نرمين إسماعيل',7000],
-      ['مشوار أكوا بارك أو أكاديمية المستقبل ومدرسة الكنانة',7000],['مشوار مدرسة رجال',7000],
-      ['كارفور الشروق',9000],['كارفور العبور',10000],['جامعة مصر الدولية',9000],['محطة عدلي منصور',13000]
+  if (action === 'split_defaults') {
+    const definitions = [
+      ['مشوار أكوا بارك',7000,0],
+      ['مشوار أكاديمية المستقبل',7000,1],
+      ['مشوار مدرسة الكنانة',7000,2]
     ];
-    const statements = defaults.map(([name, price], index) => env.DB.prepare('INSERT INTO fixed_routes(id,route_name,price_piasters,active,sort_order) VALUES(?,?,?,?,?)').bind(id(), name, price, 1, index));
-    statements.push(env.DB.prepare('INSERT INTO audit_log(id,admin_id,action,target_type,details_json) VALUES(?,?,?,?,?)').bind(id(), auth.user.id, 'routes.seed', 'fixed_routes', JSON.stringify({ count: defaults.length })));
-    await env.DB.batch(statements);
-    return json({ ok: true, created: defaults.length }, 201);
+    const all = await env.DB.prepare('SELECT id,route_name FROM fixed_routes').all();
+    const rows = all.results || [];
+    const compound = rows.find(x => /أكوا بارك/.test(x.route_name) && /أكاديمية المستقبل|الكنانة/.test(x.route_name));
+    const statements = [];
+    if (compound) statements.push(env.DB.prepare('UPDATE fixed_routes SET route_name=?,price_piasters=7000,sort_order=?,updated_at=CURRENT_TIMESTAMP WHERE id=?').bind('مشوار أكوا بارك',0,compound.id));
+    let created = 0;
+    for (const [name,price,order] of definitions) {
+      const exists = rows.some(x => x.id !== compound?.id && x.route_name.trim() === name);
+      if (!exists && !(name === 'مشوار أكوا بارك' && compound)) {
+        statements.push(env.DB.prepare('INSERT INTO fixed_routes(id,route_name,price_piasters,active,sort_order) VALUES(?,?,?,?,?)').bind(id(),name,price,1,order));
+        created++;
+      }
+    }
+    if (statements.length) {
+      statements.push(env.DB.prepare('INSERT INTO audit_log(id,admin_id,action,target_type,details_json) VALUES(?,?,?,?,?)').bind(id(),auth.user.id,'routes.split_defaults','fixed_routes',JSON.stringify({created,updated:!!compound})));
+      await env.DB.batch(statements);
+    }
+    return json({ok:true,created,updated:!!compound,message:'تم فصل أكوا بارك وأكاديمية المستقبل ومدرسة الكنانة إلى مشاوير مستقلة.'});
   }
   if (action === 'create' || action === 'update') {
     const routeName = typeof data.route_name === 'string' ? data.route_name.trim().slice(0, 120) : '';
