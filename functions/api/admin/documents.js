@@ -1,2 +1,10 @@
-import { json, fail, requireUser } from '../../_lib/core.js';
-export async function onRequestGet({request,env}) { const a=await requireUser(request,env,'admin'); if(a.error) return a.error; if(!env.DOCUMENTS) return fail('تخزين المستندات غير مربوط',503); const key=new URL(request.url).searchParams.get('key'); if(!key||!key.startsWith('captains/')) return fail('المستند غير محدد'); const row=await env.DB.prepare('SELECT id FROM captain_documents WHERE object_key=?').bind(key).first(); if(!row) return fail('المستند غير موجود',404); const obj=await env.DOCUMENTS.get(key); if(!obj) return fail('ملف المستند غير موجود',404); return new Response(obj.body,{headers:{'content-type':obj.httpMetadata?.contentType||'application/octet-stream','cache-control':'private, no-store','content-disposition':'inline'}}); }
+import { fail, requireUser } from '../../_lib/core.js';
+export async function onRequestGet({request,env}) {
+ const a=await requireUser(request,env,'admin'); if(a.error) return a.error;
+ const docId=new URL(request.url).searchParams.get('id'); if(!docId) return fail('المستند غير محدد');
+ let row;
+ if(docId.startsWith('profile:')) row=await env.DB.prepare('SELECT profile_photo_data AS file_data,profile_photo_mime AS mime_type FROM captain_profiles WHERE user_id=? AND profile_photo_data IS NOT NULL').bind(docId.slice(8)).first();
+ else row=await env.DB.prepare('SELECT file_data,mime_type FROM captain_documents WHERE id=?').bind(docId).first();
+ if(!row?.file_data) return fail('ملف الصورة غير موجود',404);
+ return new Response(row.file_data,{headers:{'content-type':row.mime_type||'image/jpeg','cache-control':'private, no-store','content-disposition':'inline','x-content-type-options':'nosniff'}});
+}

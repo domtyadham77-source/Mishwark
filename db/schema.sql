@@ -5,6 +5,8 @@ CREATE TABLE IF NOT EXISTS users (
   full_name TEXT NOT NULL,
   email TEXT NOT NULL COLLATE NOCASE,
   phone TEXT NOT NULL,
+  profile_photo_data BLOB,
+  profile_photo_mime TEXT,
   password_hash TEXT NOT NULL,
   role TEXT NOT NULL CHECK(role IN ('passenger','captain','admin')),
   status TEXT NOT NULL DEFAULT 'active' CHECK(status IN ('pending','active','suspended','rejected')),
@@ -17,6 +19,7 @@ CREATE TABLE IF NOT EXISTS users (
 
 CREATE TABLE IF NOT EXISTS captain_profiles (
   user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  vehicle_type TEXT NOT NULL DEFAULT 'car' CHECK(vehicle_type IN ('motorcycle','car')),
   wallet_provider TEXT CHECK(wallet_provider IN ('vodafone_cash','orange_cash') OR wallet_provider IS NULL),
   wallet_number TEXT,
   wallet_owner_name TEXT,
@@ -27,6 +30,9 @@ CREATE TABLE IF NOT EXISTS captain_profiles (
   vehicle_year INTEGER,
   vehicle_plate TEXT,
   vehicle_color TEXT,
+  profile_photo_data BLOB,
+  profile_photo_mime TEXT,
+  profile_photo_status TEXT NOT NULL DEFAULT 'pending' CHECK(profile_photo_status IN ('pending','approved','rejected')),
   availability TEXT NOT NULL DEFAULT 'offline' CHECK(availability IN ('online','offline')),
   approved_at TEXT
 );
@@ -34,9 +40,12 @@ CREATE TABLE IF NOT EXISTS captain_profiles (
 CREATE TABLE IF NOT EXISTS captain_documents (
   id TEXT PRIMARY KEY,
   captain_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  document_type TEXT NOT NULL CHECK(document_type IN ('national_id','driving_license','vehicle_license')),
+  document_type TEXT NOT NULL CHECK(document_type IN ('national_id','driving_license','vehicle_license','vehicle_photo')),
   side TEXT NOT NULL CHECK(side IN ('front','back')),
-  object_key TEXT NOT NULL,
+  object_key TEXT,
+  file_data BLOB,
+  mime_type TEXT,
+  file_size INTEGER,
   review_status TEXT NOT NULL DEFAULT 'pending' CHECK(review_status IN ('pending','approved','rejected')),
   uploaded_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -203,6 +212,8 @@ CREATE INDEX IF NOT EXISTS idx_notifications_user ON user_notifications(user_id,
 
 INSERT OR IGNORE INTO app_settings(setting_key,setting_value) VALUES
  ('captain_monthly_fee_piasters','10000'),
+ ('negotiation_min_piasters','2500'),
+ ('negotiation_max_piasters','5000'),
  ('captain_trial_enabled','1'),
  ('captain_trial_months','3'),
  ('captain_subscription_wallet_number',''),

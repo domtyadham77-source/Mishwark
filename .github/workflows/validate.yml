@@ -1,0 +1,64 @@
+name: Validate project
+on:
+  push:
+    branches: [main, fix/admin-query-and-pwa-icon]
+  pull_request:
+    branches: [main]
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check every JavaScript file
+        run: find functions public -name '*.js' -print0 | xargs -0 -n1 node --check
+      - name: Validate JSON files
+        run: |
+          node -e "JSON.parse(require('fs').readFileSync('package.json','utf8'))"
+          node -e "JSON.parse(require('fs').readFileSync('public/manifest.webmanifest','utf8'))"
+      - name: Validate fresh D1 schema
+        run: |
+          python3 - <<'PY'
+          import sqlite3
+          from pathlib import Path
+          db = sqlite3.connect(':memory:')
+          db.executescript(Path('db/schema.sql').read_text(encoding='utf-8'))
+          required = ['users', 'sessions', 'rate_limits', 'rides', 'ride_offers', 'captain_profiles', 'captain_documents', 'app_settings', 'captain_subscriptions']
+          present = {row[0] for row in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+          missing = sorted(set(required) - present)
+          if missing:
+              raise SystemExit('Missing schema tables: ' + ', '.join(missing))
+          columns = {row[1] for row in db.execute("PRAGMA table_info(captain_profiles)")}
+          if 'vehicle_type' not in columns:
+              raise SystemExit('Missing captain_profiles.vehicle_type')
+          print('D1 schema OK')
+          PY
+      - name: Validate captain vehicle migration
+        run: |
+          python3 - <<'PY'
+          import sqlite3
+          from pathlib import Path
+          db = sqlite3.connect(':memory:')
+          db.executescript("""
+          CREATE TABLE users(id TEXT PRIMARY KEY);
+          CREATE TABLE captain_profiles(user_id TEXT PRIMARY KEY REFERENCES users(id));
+          CREATE TABLE captain_documents(
+            id TEXT PRIMARY KEY, captain_id TEXT NOT NULL REFERENCES users(id),
+            document_type TEXT NOT NULL CHECK(document_type IN ('national_id','driving_license','vehicle_license')),
+            side TEXT NOT NULL CHECK(side IN ('front','back')), object_key TEXT,
+            file_data BLOB, mime_type TEXT, file_size INTEGER,
+            review_status TEXT NOT NULL DEFAULT 'pending', uploaded_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+          );
+          CREATE UNIQUE INDEX idx_captain_document_slot ON captain_documents(captain_id,document_type,side);
+          INSERT INTO users(id) VALUES('captain-1');
+          INSERT INTO captain_profiles(user_id) VALUES('captain-1');
+          INSERT INTO captain_documents(id,captain_id,document_type,side) VALUES('old-doc','captain-1','driving_license','front');
+          """)
+          db.executescript(Path('db/migrations/0005_captain_vehicle_types.sql').read_text(encoding='utf-8'))
+          assert db.execute("SELECT vehicle_type FROM captain_profiles WHERE user_id='captain-1'").fetchone()[0] == 'car'
+          db.execute("INSERT INTO captain_documents(id,captain_id,document_type,side) VALUES('vehicle-photo','captain-1','vehicle_photo','front')")
+          assert db.execute("SELECT COUNT(*) FROM captain_documents").fetchone()[0] == 2
+          print('Captain vehicle migration OK')
+          PY

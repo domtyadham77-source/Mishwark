@@ -1,4 +1,4 @@
-import { json, fail, body, clean, id, sha256, cookie, requireOrigin, rateLimit } from '../../_lib/core.js';
+import { json, fail, body, clean, id, sha256, cookie, requireOrigin, rateLimit, clearRateLimit } from '../../_lib/core.js';
 
 function constantTimeEqual(a, b) {
   if (typeof a !== 'string' || typeof b !== 'string') return false;
@@ -13,20 +13,18 @@ function constantTimeEqual(a, b) {
 export async function onRequestPost({ request, env }) {
   const originError = requireOrigin(request);
   if (originError) return originError;
-  if (await rateLimit(request, env, 'admin-panel-login', 5, 900)) {
-    return fail('محاولات كثيرة. انتظر 15 دقيقة ثم حاول مرة أخرى.', 429);
-  }
-
-  const configuredPassword = env.ADMIN_PANEL_PASSWORD;
-  if (typeof configuredPassword !== 'string' || configuredPassword.length < 16) {
-    return fail('كلمة مرور لوحة الإدارة غير مضبوطة في Cloudflare Secrets. يجب أن تكون 16 حرفًا على الأقل.', 503);
+    const configuredPassword = env.ADMIN_PANEL_PASSWORD || env.ADMIN_PIN;
+  if (typeof configuredPassword !== 'string' || configuredPassword.length === 0) {
+    return fail('كلمة مرور لوحة الإدارة غير مضبوطة. راجع ADMIN_PANEL_PASSWORD أو ADMIN_PIN في Cloudflare.', 503);
   }
 
   const data = await body(request);
   const password = typeof data?.password === 'string' ? data.password : '';
   if (!constantTimeEqual(password, configuredPassword)) {
+    if (await rateLimit(request, env, 'admin-panel-login', 5, 900)) return fail('محاولات كثيرة. تم إيقاف المحاولات مؤقتًا لمدة 15 دقيقة.', 429);
     return fail('كلمة مرور الإدارة غير صحيحة.', 401);
   }
+  await clearRateLimit(request, env, 'admin-panel-login');
 
   const admin = await env.DB.prepare("SELECT id,full_name,email,phone,role,status FROM users WHERE role='admin' AND status='active' LIMIT 1").first();
   if (!admin) return fail('حساب الإدارة الأول غير مُنشأ بعد. أكمل إعداد الأدمن أولًا.', 503);
