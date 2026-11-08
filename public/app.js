@@ -161,10 +161,10 @@ document.addEventListener('submit',async e=>{
  try{
   const r=await fetch('/api/auth/'+mode,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload)});
   const d=await r.json();if(!r.ok)throw Error(d.error||'تعذر تنفيذ الطلب');
-  if(mode==='register'){setMode('login');$('authMessage').textContent=d.message||'تم إنشاء الحساب. سجّل دخولك للمتابعة.';}
+  if(mode==='register'&&selectedRole==='captain'){setMode('login');$('authMessage').textContent=d.message||'تم إنشاء الحساب. سجّل دخولك بعد مراجعة الإدارة.';}
   else{
    const me=await fetch('/api/auth/me',{cache:'no-store'});const session=await me.json();
-   if(!me.ok||!session.user)throw Error('تم تسجيل الدخول لكن تعذر تحميل بيانات الحساب. حاول تحديث الصفحة.');
+   if(!me.ok||!session.user)throw Error('تم إنشاء الحساب، لكن تعذر فتح الجلسة تلقائيًا. جرّب تسجيل الدخول.');
    $('authMessage').textContent='';openAuthenticatedApp(session.user);
   }
  }catch(err){$('authMessage').textContent=err.message||'تعذر الاتصال بالسيرفر. لم يتم تأكيد العملية.';}
