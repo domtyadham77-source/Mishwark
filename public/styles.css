@@ -164,3 +164,9 @@ button:disabled{opacity:.52;filter:saturate(.5);transform:none;cursor:not-allowe
 #rideRequestMessage{color:#f1d6ff}
 @media(min-width:760px){.passenger-booking-panel{max-width:900px;margin-inline:auto}.passenger-ride .ride-map-viewport{height:430px}}
 @media(max-width:520px){.passenger-ride{margin-inline:-2px!important}.passenger-booking-panel{padding:18px 14px 22px;border-radius:25px 25px 16px 16px}.booking-heading h2{font-size:22px}.destination-search{height:62px}.destination-search input{font-size:17px}.passenger-map-head h2{font-size:17px}.map-hint{max-width:120px;text-align:left}}
+
+
+/* Keep the password visibility control anchored inside its input. */
+.password-field{position:relative;display:block;width:100%;min-width:0;direction:ltr}
+.password-field>input{display:block;box-sizing:border-box;width:100%;padding-left:50px!important}
+.password-field>.password-eye{position:absolute;left:8px;top:50%;transform:translateY(-50%);z-index:2;margin:0}
